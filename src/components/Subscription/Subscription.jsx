@@ -1,10 +1,5 @@
 import styles from "./Subscription.scss?inline"
 import { useHostContext } from "../useHostContext/useHostContext"
-/*
-const Test = ({USE, test}) => <div>{USE}{test}</div>
-
-const TestWithHostContext = withHostContext(Test)
-*/
 
 const Subscription = () => {
   const username = useHostContext("username")
@@ -13,7 +8,7 @@ const Subscription = () => {
       <style>{styles}</style>
       <div className="subscription">
         <h2 className="subscription__title">Subscription</h2>
-        <p className="subscription__greeting">Hello {username} {test}!</p>
+        <p className="subscription__greeting">Hello {username}!</p>
         <label htmlFor="email">
           <input
             id="email"

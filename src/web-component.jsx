@@ -50,7 +50,7 @@ class SubscriptionWebComponent extends HTMLElement {
   attributeChangedCallback(name, _, newValue) {
     console.log(name, newValue)
     //if (HostState.getState(name) !== newValue) {
-    HostStateStore.setState(name, newValue)
+      this.hostState.setState(name, newValue)
     //}
   }
 
