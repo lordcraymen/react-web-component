@@ -27,6 +27,10 @@ const exposeProperties = (target, props) => {
   });
 };
 
+const typeCastAtribute = (attr) => {
+  
+}  
+
 class SubscriptionWebComponent extends HTMLElement {
   constructor() {
     super();
@@ -45,7 +49,7 @@ class SubscriptionWebComponent extends HTMLElement {
   }
 
   attributeChangedCallback(name, previousValue, newValue) {
-      if(this.hostState.setState(name, ) !== previousValue) { this.hostState.setState(name, newValue) }
+      if(this.hostState.getState(name) !== previousValue) { this.hostState.setState(name, newValue) }
   }
 
   updateReactComponent() {

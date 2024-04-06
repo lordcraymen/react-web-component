@@ -1,2 +1,2 @@
-import SubscriptionWebComponent from "./web-component";
-customElements.define("my-subscription", SubscriptionWebComponent);
+import WebComponent from "./web-component";
+customElements.define("my-web-component", WebComponent);

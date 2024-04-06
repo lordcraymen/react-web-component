@@ -1,11 +1,11 @@
-import { Subscription } from './components/Subscription'
+import styles from "./App.scss?inline"
+import { Scene } from './components/Scene'
 
 const ComponentInterface = {
-  "username": "User",
-  "should-display-mentions": false,
-  "on-load" : () => {}
+  "onload" : ()=>{},
+  "object-url": new URL("about:blank")
 }
 
-const App = () => <Subscription />
+const App = () => (<><Scene /><style>{styles}</style></>)
 
 export { App, ComponentInterface }
