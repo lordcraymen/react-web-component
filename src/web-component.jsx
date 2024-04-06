@@ -1,18 +1,15 @@
 import ReactDOM from "react-dom/client";
-import React from "react"; // Make sure to import React
-import App from "./App";
+import React from "react";
+import { App, ComponentInterface } from "./App";
 import { Store } from "./components/useHostContext/HostStateStore";
 import { HostContext } from "./components/useHostContext/useHostContext";
 
-const normalizeAttribute = (attribute) => attribute.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
-
-const normalizeAttributeToPropertyName = (attribute) => attribute.replace(/-([a-z])/g, (g) => g[1].toUpperCase())
-
-const normalizePropertyNameToAttribute = (property) => property.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+const kebabToCamel = (attribute) => attribute.replace(/-([a-z])/g, (g) => g[1].toUpperCase())
+const camelToKebab = (variableName) => variableName.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 
 const exposeProperties = (target, props) => {
   props.forEach(prop => {
-    const attr = normalizePropertyNameToAttribute(prop);
+    const attr = camelToKebab(prop);
     Object.defineProperty(target, prop, {
       get() {
         return this.getAttribute(attr);
@@ -35,23 +32,20 @@ class SubscriptionWebComponent extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.root = ReactDOM.createRoot(this.shadowRoot); // Store the root for later updates
-    this.hostState = new Store()
-    exposeProperties(this, SubscriptionWebComponent.observedAttributes.map(normalizeAttributeToPropertyName));
+    this.hostState = new Store(ComponentInterface)
+    exposeProperties(this, SubscriptionWebComponent.observedAttributes.map(kebabToCamel));
   }
 
   static get observedAttributes() {
-    return ["username", "should-display-mentions", "test"] // Example attributes
+    return Object.keys(ComponentInterface) // Example attributes
   }
 
   connectedCallback() {
     this.updateReactComponent()
   }
 
-  attributeChangedCallback(name, _, newValue) {
-    console.log(name, newValue)
-    //if (HostState.getState(name) !== newValue) {
-      this.hostState.setState(name, newValue)
-    //}
+  attributeChangedCallback(name, previousValue, newValue) {
+      if(this.hostState.setState(name, ) !== previousValue) { this.hostState.setState(name, newValue) }
   }
 
   updateReactComponent() {
@@ -65,7 +59,7 @@ class SubscriptionWebComponent extends HTMLElement {
 
     for (let index = 0; index < this.attributes.length; index++) {
       const attribute = this.attributes[index]
-      props[normalizeAttribute(attribute.name)] = attribute.value
+      props[camelToKebab(attribute.name)] = attribute.value
     }
 
     return props

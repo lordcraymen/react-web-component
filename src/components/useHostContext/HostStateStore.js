@@ -1,6 +1,6 @@
 class Store {
-    constructor() {
-      this.state = {};
+    constructor(defaults) {
+      this.state = defaults || {};
       this.listeners = new Map();
     }
   

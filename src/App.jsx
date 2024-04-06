@@ -1,10 +1,11 @@
 import { Subscription } from './components/Subscription'
 
-function App() {
-
-  return (
-      <Subscription />
-    )
+const ComponentInterface = {
+  "username": "User",
+  "should-display-mentions": false,
+  "on-load" : () => {}
 }
 
-export default App
+const App = () => <Subscription />
+
+export { App, ComponentInterface }

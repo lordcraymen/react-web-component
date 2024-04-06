@@ -4,6 +4,7 @@ import { useHostContext } from "../useHostContext/useHostContext"
 const Subscription = () => {
   const username = useHostContext("username")
   const shouldDisplayMentions = useHostContext("should-display-mentions")
+  const onLoad = useHostContext("on-load")
    return (<>   
       <style>{styles}</style>
       <div className="subscription">
@@ -17,6 +18,7 @@ const Subscription = () => {
             placeholder="Enter your email"
           />
         </label>
+        <button onClick={() => onLoad()} >test</button>
         {shouldDisplayMentions === "true" && (
           <p className="subscription__mentions">
             My mention should be display here...
