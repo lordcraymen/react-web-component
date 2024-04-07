@@ -32,10 +32,14 @@ const typeCastAtribute = (attr) => {
 }  
 
 class SubscriptionWebComponent extends HTMLElement {
+  private root;
+  private hostState;
+  
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this.root = ReactDOM.createRoot(this.shadowRoot); // Store the root for later updates
+    ComponentInterface["host-element"] = this
     this.hostState = new Store(ComponentInterface)
     exposeProperties(this, SubscriptionWebComponent.observedAttributes.map(kebabToCamel));
   }
