@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { A11y } from '@react-three/a11y';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei'
+import { Link } from '../Link';
+import { ViewPointProvider } from '../ViewPoint/Viewpoint';
 
 const Box = ({ isFocused, ...props }) => {
   const ref = useRef();
@@ -30,34 +31,34 @@ const Scene = () => {
   const [focusedBox, setFocusedBox] = useState(null); // Track which box is focused
 
   return (
-    <Canvas>
-      <ambientLight intensity={Math.PI / 2} />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
-      <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-      <OrbitControls
-        enableDamping
-        enablePan
-        enableRotate
-        enableZoom
-      />
-      <A11y
-        role="button"
-        description="Box number 1"
-        tabIndex={0}
-        focusCall={() => setFocusedBox(1)} // Focus on Box 1
-      >
-        <Box position={[-1.2, 0, 0]} isFocused={focusedBox === 1} />
-      </A11y>
-      <A11y
-        role="button"
-        description="Box number 2"
-        tabIndex={0}
-        focusCall={() => setFocusedBox(2)} // Focus on Box 2
-      >
-        <Box position={[1.2, 0, 0]} isFocused={focusedBox === 2} />
-      </A11y>
-      {/* More Boxes as needed */}
-    </Canvas>
+    <ViewPointProvider>
+      <Canvas>
+        <ambientLight intensity={Math.PI / 2} />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
+        <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
+        <OrbitControls
+          enableDamping
+          enablePan
+          enableRotate
+          enableZoom
+        />
+        <Link
+          href="#Box1"
+          alt="Box number 1"
+          onFocus={() => setFocusedBox(1)} // Focus on Box 1
+        >
+          <Box position={[-1.2, 0, 0]} isFocused={focusedBox === 1} />
+        </Link>
+        <Link
+          href="#Box2"
+          alt="Box number 2"
+          onFocus={() => setFocusedBox(2)} // Focus on Box 2
+        >
+          <Box position={[1.2, 0, 0]} isFocused={focusedBox === 2} />
+        </Link>
+        {/* More Boxes as needed */}
+      </Canvas>
+    </ViewPointProvider>
   );
 };
 
