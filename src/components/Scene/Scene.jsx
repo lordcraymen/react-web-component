@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei'
 import { Link } from '../Link';
-import { ViewPointProvider } from '../ViewPoint/Viewpoint';
+import { ViewPoint, ViewPointProvider } from '../ViewPoint/Viewpoint';
 
 const Box = ({ isFocused, ...props }) => {
   const ref = useRef();
@@ -42,13 +42,15 @@ const Scene = () => {
           enableRotate
           enableZoom
         />
-        <Link
-          href="#Box1"
-          alt="Box number 1"
-          onFocus={() => setFocusedBox(1)} // Focus on Box 1
-        >
-          <Box position={[-1.2, 0, 0]} isFocused={focusedBox === 1} />
-        </Link>
+        <ViewPoint position={[10, 5, 10]} target={[0, 0, 0]}>
+          {({setActive}) => <Link
+            href="#Box1"
+            alt="Box number 1"
+            onFocus={() => setActive()} // Focus on Box 1
+          >
+            <Box position={[-1.2, 0, 0]} isFocused={focusedBox === 1} />
+          </Link>}
+        </ViewPoint>
         <Link
           href="#Box2"
           alt="Box number 2"
