@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei'
+import { CameraControls } from '@react-three/drei'
 import { Link } from '../Link';
 import { ViewPoint, ViewPointProvider } from '../ViewPoint/Viewpoint';
 
@@ -16,7 +16,6 @@ const Box = ({ isFocused, ...props }) => {
       {...props}
       ref={ref}
       scale={clicked ? 1.5 : isFocused || hovered ? 1.25 : 1} // Adjust for focus
-      onClick={(event) => click(!clicked)}
       onPointerOver={(event) => hover(true)}
       onPointerOut={(event) => hover(false)}
     >
@@ -31,36 +30,26 @@ const Scene = () => {
   const [focusedBox, setFocusedBox] = useState(null); // Track which box is focused
 
   return (
-    <ViewPointProvider>
+    
       <Canvas>
         <ambientLight intensity={Math.PI / 2} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-        <OrbitControls
-          enableDamping
-          enablePan
-          enableRotate
-          enableZoom
+        <CameraControls
         />
-        <ViewPoint position={[10, 5, 10]} target={[0, 0, 0]}>
+        <ViewPointProvider>
+        <ViewPoint position={[-10, 5, 10]} target={[0, 0, 0]}>
           {({setActive}) => <Link
             href="#Box1"
             alt="Box number 1"
-            onFocus={() => setActive()} // Focus on Box 1
-          >
-            <Box position={[-1.2, 0, 0]} isFocused={focusedBox === 1} />
+            onFocus={setActive}
+            onClick={setActive}
+          >{({focus}) => <Box position={[-1.2, 0, 0]} isFocused={focus} />}
           </Link>}
         </ViewPoint>
-        <Link
-          href="#Box2"
-          alt="Box number 2"
-          onFocus={() => setFocusedBox(2)} // Focus on Box 2
-        >
-          <Box position={[1.2, 0, 0]} isFocused={focusedBox === 2} />
-        </Link>
-        {/* More Boxes as needed */}
+        </ViewPointProvider>
       </Canvas>
-    </ViewPointProvider>
+   
   );
 };
 
