@@ -37,7 +37,7 @@ const Scene = () => {
           enableZoom={true}
           enablePan={true}
           enableRotate={true}
-          zoomSpeed={0.5}
+          zoomSpeed={2}
           panSpeed={0.5}
           rotateSpeed={0.5}
         />
@@ -49,6 +49,15 @@ const Scene = () => {
             onFocus={setActive}
             onClick={setActive}
           >{({focus}) => <Box position={[-1.2, 0, 0]} isFocused={focus} />}
+          </Link>}
+        </ViewPoint>
+        <ViewPoint position={[0, 5, -10]}>
+          {({setActive}) => <Link
+            href="#Box1"
+            alt="Box number 1"
+            onFocus={setActive}
+            onClick={setActive}
+          >{({focus}) => <Box position={[1.2, 0, 0]} isFocused={focus} />}
           </Link>}
         </ViewPoint>
         </ViewPointProvider>
