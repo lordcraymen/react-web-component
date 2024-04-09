@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { CameraControls } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import { Link } from '../Link';
 import { ViewPoint, ViewPointProvider } from '../ViewPoint/Viewpoint';
 
@@ -27,18 +27,22 @@ const Box = ({ isFocused, ...props }) => {
 
 
 const Scene = () => {
-  const [focusedBox, setFocusedBox] = useState(null); // Track which box is focused
 
   return (
-    
       <Canvas>
         <ambientLight intensity={Math.PI / 2} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
         <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-        <CameraControls
+        <OrbitControls
+          enableZoom={true}
+          enablePan={true}
+          enableRotate={true}
+          zoomSpeed={0.5}
+          panSpeed={0.5}
+          rotateSpeed={0.5}
         />
         <ViewPointProvider>
-        <ViewPoint position={[-10, 5, 10]} target={[0, 0, 0]}>
+        <ViewPoint position={[0, 5, 10]} target={[0, 0, 0]}>
           {({setActive}) => <Link
             href="#Box1"
             alt="Box number 1"

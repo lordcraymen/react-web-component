@@ -1,49 +1,42 @@
-import React, { createContext, useContext, useRef, useState } from 'react';
-import { useThree } from '@react-three/fiber';
-import { useSpring } from '@react-spring/three';
+import React, { createContext, useContext, useState } from 'react';
+import { Euler, Vector3 } from 'three'
+import { useThree } from '@react-three/fiber'
+import { useSpring } from '@react-spring/three'
 
-const ViewPointContext = createContext({ updateViewPoint:(position,target)=>{}, isAnimating:false });
+const ViewPointContext = createContext({ setDestination:(destination)=>{}, isMoving:false });
 
 const ViewPointProvider = ({ children }) => {
-  const { camera } = useThree();
-  const [isAnimating, setIsAnimating] = useState(false);
+  const { camera } = useThree()
+  const [isMoving, setIsMoving] = useState(false)
 
-  // You may need to adjust the initial value to match your camera's initial position
-  const [target, setTarget] = useState(camera.position.toArray());
-  const [lookAt, setLookAt] = useState([0, 0, 0]); // Default lookAt target
+  const [destination, setDestination] = useState({rotation: camera.rotation, position: camera.position})
 
   useSpring({
-    to: { position: target, lookAt: lookAt },
     from: { position: camera.position.toArray(), lookAt: [camera.rotation.x, camera.rotation.y, camera.rotation.z] },
-    onRest: () => setIsAnimating(false),
-    onStart: () => setIsAnimating(true),
+    to: { position: destination.position, rotation: destination.rotation },
+    onRest: () => setIsMoving(false),
+    onStart: () => setIsMoving(true),
     onChange: ({ value }) => {
-      camera.position.set(...value.position);
-      camera.lookAt(...value.lookAt);
+      camera.position.set(value.position[0], value.position[1], value.position[2])
+      camera.rotation.set(value.lookAt[0], value.lookAt[1], value.lookAt[2])
     },
     reset: true,
   });
 
-  const updateViewPoint = (newTarget, newLookAt, callback) => {
-    setIsAnimating(true);
-    setTarget(newTarget);
-    setLookAt(newLookAt);
-  };
-
   return (
-    <ViewPointContext.Provider value={{ updateViewPoint, isAnimating }}>
+    <ViewPointContext.Provider value={{ setDestination, isMoving }}>
       {children}
     </ViewPointContext.Provider>
   );
 };
 
-const useViewpoint = () => useContext(ViewPointContext);
+const useViewpoint = () => useContext(ViewPointContext)
 
-const ViewPoint = ({ position, target, children }) => {
-  const { updateViewPoint } = useViewpoint();
+const ViewPoint = ({ position = new Vector3, rotation = new Euler(), children }) => {
+  const { setDestination } = useViewpoint();
 
   const setActive = () => {
-    updateViewPoint(position, target);
+    setDestination({position, rotation})
   };
 
   return typeof children === "function" ? children({setActive}) : children
