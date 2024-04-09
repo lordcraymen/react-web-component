@@ -42,7 +42,7 @@ const Scene = () => {
           rotateSpeed={0.5}
         />
         <ViewPointProvider>
-        <ViewPoint position={[0, 5, 10]} target={[0, 0, 0]}>
+        <ViewPoint position={[0, 5, 10]}>
           {({setActive}) => <Link
             href="#Box1"
             alt="Box number 1"

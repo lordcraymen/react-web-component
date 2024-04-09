@@ -9,16 +9,16 @@ const ViewPointProvider = ({ children }) => {
   const { camera } = useThree()
   const [isMoving, setIsMoving] = useState(false)
 
-  const [destination, setDestination] = useState({rotation: camera.rotation, position: camera.position})
+  const [destination, setDestination] = useState({position: camera.position.toArray(), rotation: [camera.rotation.x, camera.rotation.y, camera.rotation.z]})
 
   useSpring({
-    from: { position: camera.position.toArray(), lookAt: [camera.rotation.x, camera.rotation.y, camera.rotation.z] },
+    from: { position: camera.position.toArray(), rotation: [camera.rotation.x, camera.rotation.y, camera.rotation.z] },
     to: { position: destination.position, rotation: destination.rotation },
     onRest: () => setIsMoving(false),
     onStart: () => setIsMoving(true),
     onChange: ({ value }) => {
       camera.position.set(value.position[0], value.position[1], value.position[2])
-      camera.rotation.set(value.lookAt[0], value.lookAt[1], value.lookAt[2])
+      camera.rotation.set(value.rotation[0], value.rotation[1], value.rotation[2])
     },
     reset: true,
   });
@@ -32,7 +32,7 @@ const ViewPointProvider = ({ children }) => {
 
 const useViewpoint = () => useContext(ViewPointContext)
 
-const ViewPoint = ({ position = new Vector3, rotation = new Euler(), children }) => {
+const ViewPoint = ({ position = [0, 5, 10], rotation = [0, 5, 10], children }) => {
   const { setDestination } = useViewpoint();
 
   const setActive = () => {
