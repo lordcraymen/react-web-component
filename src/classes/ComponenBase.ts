@@ -34,4 +34,19 @@ class ComponentBase extends HTMLElement {
     }
 }
 
-export { ComponentBase };
+function createWebComponent(_interface = {}) {
+    return class extends ComponentBase {
+        static get observedAttributes() {
+            return Object.keys(_interface);
+        }
+
+        constructor() {
+            super();
+            for (let key in _interface) {
+                this[key] = _interface[key];
+            }
+        }
+    };
+}
+
+export { createWebComponent, ComponentBase };
