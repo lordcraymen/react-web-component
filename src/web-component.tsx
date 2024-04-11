@@ -1,5 +1,6 @@
 import ReactDOM from "react-dom/client";
 import React from "react";
+import { ComponentBase } from "./classes/ComponenBase";
 import { App, ComponentInterface } from "./App";
 import { Store } from "./components/useHostContext/HostStateStore";
 import { HostContext } from "./components/useHostContext/useHostContext";
@@ -26,12 +27,9 @@ const exposeProperties = (target, props) => {
     });
   });
 };
+ 
 
-const typeCastAtribute = (attr) => {
-  
-}  
-
-class SubscriptionWebComponent extends HTMLElement {
+class SubscriptionWebComponent extends ComponentBase {
   private root;
   private hostState;
   
@@ -74,4 +72,4 @@ class SubscriptionWebComponent extends HTMLElement {
   }
 }
 
-export default SubscriptionWebComponent
+export { SubscriptionWebComponent }
