@@ -1,8 +1,14 @@
 class ComponentBase extends HTMLElement {
     private subscribers = new Map();
     private unsubscribe = () => {};
+    private attributeChangeHandler?: any;
 
-    subscribe(component) {
+    constructor(attributeChangeHandler?: any) {
+        super();
+        this.attributeChangeHandler = attributeChangeHandler;
+    }
+
+    protected subscribe(component) {
         if (component instanceof ComponentBase && component.parentNode === this) {
             this.subscribers.set(component, component);
             return () => this.subscribers.delete(component);
@@ -10,11 +16,19 @@ class ComponentBase extends HTMLElement {
         throw new Error("Failed to subscribe: Component must be a ComponentBase instance and a direct child.");
     }
 
-    connectedCallback() {
+    protected connectedCallback() {
         this.unsubscribe = this.parentElement instanceof ComponentBase ? this.parentElement.subscribe(this) : () => {};
     }
 
-    disconnectedCallback() {    
+    protected attributeChangedCallback(name, previousValue, newValue) {
+        if (previousValue !== newValue) {
+            this.attributeChangeHandler ? this.attributeChangeHandler(name, newValue) : this.onAttributeChange(name, newValue);
+            }
+    }
+    
+    onAttributeChange(name: any, newValue: any) {}
+
+    protected disconnectedCallback() {
         this.unsubscribe();
         this.subscribers.clear();
     }
