@@ -43,8 +43,8 @@ class ComponentBase extends HTMLElement {
 
     protected attributeChangedCallback(name: string, previousValue: any, newValue: any) {
         if (previousValue !== newValue) {
-            this.attributeChangeHandler && this.attributeChangeHandler(name, newValue)
-            this.onAttributeChange(name, newValue)
+            this.attributeChangeHandler && this.attributeChangeHandler(name, newValue);
+            this.onAttributeChange(name, newValue);
         }
     }
 
@@ -58,7 +58,7 @@ class ComponentBase extends HTMLElement {
         this.state.set(name, newValue);
         console.log("attributeChanged!",this.state)
         this.dispatchEvent(subscriptionEvent);
-        this.dispatchEvent(new CustomEvent('ComponentBase:Update', { detail: this.state , ...eventProperties }))
+        this.dispatchEvent(new CustomEvent('ComponentBase:Update', { detail: this.state , bubbles: true, composed: true, cancelable: true}))
     }
 
 }
