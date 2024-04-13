@@ -30,13 +30,13 @@ const exposeProperties = (target, props) => {
  
 
 class SubscriptionWebComponent extends ComponentBase {
-  private root;
+  //private root;
   private hostState;
   
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
-    this.root = ReactDOM.createRoot(this.shadowRoot); // Store the root for later updates
+    //this.attachShadow({ mode: "open" });
+    //this.root = ReactDOM.createRoot(this.shadowRoot); // Store the root for later updates
     ComponentInterface["host-element"] = this
     this.hostState = new Store(ComponentInterface)
     exposeProperties(this, SubscriptionWebComponent.observedAttributes.map(kebabToCamel));
@@ -57,7 +57,7 @@ class SubscriptionWebComponent extends ComponentBase {
   updateReactComponent() {
     // Get props from attributes every time an update is needed
     const props = this.getPropsFromAttributes()
-    this.root.render(<HostContext.Provider value={this.hostState}><App /></HostContext.Provider>)
+    this.root?.render(<HostContext.Provider value={this.hostState}><App /></HostContext.Provider>)
   }
 
   getPropsFromAttributes() {

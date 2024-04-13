@@ -1,81 +1,84 @@
 const eventProperties = {  bubbles: true, composed: true, cancelable: true };
 
-const subscriptionEvent = new Event('ComponentBase:Subscribe', eventProperties);
-const updateEvent = new Event('ComponentBase:Update', eventProperties);
-const unSubscribtionEvent = new Event('ComponentBase:Unsubscribe', eventProperties);
+const UPDATE_EVENT = 'ComponentBase:Update'
 
 
 class ComponentBase extends HTMLElement {   
+    private root;
     private subscribers = new WeakMap<ComponentBase,any>();
     private state = new Map<string, any>();
+    private isDirty = false;
 
-    constructor(private attributeChangeHandler?: (name: string, newValue: any) => void) {
+    
+    constructor() {
         super();
-        this.addEventListener(subscriptionEvent.type, this.handleSubscribe);
-        this.addEventListener('ComponentBase:Update', this.handleUpdate);
-        this.addEventListener(unSubscribtionEvent.type, this.handleUnSubscribe);
-
+        //this.attachShadow({ mode: "open" });
+        this.addEventListener(UPDATE_EVENT, this.handleUpdate);
     }
+    
+
 
     public getSubscribers = () => this.subscribers;
 
-    private handleSubscribe = (e) => {
-        console.log(e.target, "is subscribing to updates")
-        if (e.target instanceof ComponentBase) {
-            e.stopPropagation();
-            this.subscribers.set(e.target,e.detail);
+    static observedAttributes = () => {
+        return [];
+    }
+
+    private getState = () => {
+        const observedAttributes = ComponentBase.observedAttributes();
+        const state = {};
+        for (const attr of observedAttributes) {
+            state[attr] = this.getAttribute(attr);
         }
+        this.isDirty = false;
+        return state;
     }
 
     private handleUpdate = (e) => {
-        console.log(e.target, "is sending an update")
+        console.log(e.target, "is receiving an update")
         if (e.target instanceof ComponentBase) {
             e.stopPropagation();
             this.subscribers.set(e.target,e.detail);
+            !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: this.getState, ...eventProperties }))
         }
     }
 
-    private handleUnSubscribe = (e) => { e.stopPropagation(); this.subscribers.delete(e.target); }
-
     protected connectedCallback() {
-        this.dispatchEvent(subscriptionEvent);
+        !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: this.getState, ...eventProperties }))
     }
 
-    protected attributeChangedCallback(name: string, previousValue: any, newValue: any) {
+    protected attributeChangedCallback(name: string, previousValue: unknown, newValue: unknown) {
         if (previousValue !== newValue) {
-            this.attributeChangeHandler && this.attributeChangeHandler(name, newValue);
+            if(!this.isDirty) this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: this.getState, ...eventProperties }))
+            this.isDirty = true;
             this.onAttributeChange(name, newValue);
         }
     }
 
     protected disconnectedCallback() {
-        this.dispatchEvent(unSubscribtionEvent);
-        this.removeEventListener(subscriptionEvent.type, this.handleSubscribe);
-        this.removeEventListener(unSubscribtionEvent.type, this.handleUnSubscribe);
+        this.dispatchEvent(new Event(UPDATE_EVENT));
+        this.removeEventListener(UPDATE_EVENT, this.handleUpdate);
     }
     
-    onAttributeChange(name: any, newValue: any) {
-        this.state.set(name, newValue);
-        console.log("attributeChanged!",this.state)
-        this.dispatchEvent(subscriptionEvent);
-        this.dispatchEvent(new CustomEvent('ComponentBase:Update', { detail: this.state , bubbles: true, composed: true, cancelable: true}))
-    }
+    onAttributeChange(name: string, newValue: unknown) {}
 
 }
 
-const createWebComponent = (_interface = {}) =>{
+interface ComponentInterface {
+    [key: string]: any;
+}
+
+const createWebComponent = (_interface: ComponentInterface) => {
     return class extends ComponentBase {
-        static get observedAttributes() {
+        static observedAttributes() {
             return Object.keys(_interface);
         }
 
         constructor() {
             super();
-            for (let key in _interface) {
-                this[key] = _interface[key];
-            }
+            Object.assign(this, _interface);
         }
-    };
+    }
 }
 
 export { createWebComponent, ComponentBase };
