@@ -6,18 +6,14 @@ const UPDATE_EVENT = 'ComponentBase:Update'
 class ComponentBase extends HTMLElement {   
     private root;
     private subscribers = new WeakMap<ComponentBase,any>();
-    private state = new Map<string, any>();
     private isDirty = false;
 
     
     constructor() {
         super();
-        //this.attachShadow({ mode: "open" });
         this.addEventListener(UPDATE_EVENT, this.handleUpdate);
     }
     
-
-
     public getSubscribers = () => this.subscribers;
 
     static observedAttributes = () => {
@@ -68,8 +64,10 @@ interface ComponentInterface {
     [key: string]: any;
 }
 
-const createWebComponent = (_interface: ComponentInterface) => {
-    return class extends ComponentBase {
+const createWebComponent = (name, _interface: ComponentInterface) => {
+    if(!name) return
+    
+    const ComponentClass = class extends ComponentBase {
         static observedAttributes() {
             return Object.keys(_interface);
         }
@@ -78,7 +76,12 @@ const createWebComponent = (_interface: ComponentInterface) => {
             super();
             Object.assign(this, _interface);
         }
+
+        [Symbol.iterator]() {
+            return Object.entries(_interface)[Symbol.iterator]();
+        }
     }
+    customElements.define(name, ComponentClass);
 }
 
 export { createWebComponent, ComponentBase };

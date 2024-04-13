@@ -1,6 +1,5 @@
-import { SubscriptionWebComponent }  from "./web-component";
-customElements.define("my-web-component", SubscriptionWebComponent );
-
 import { createWebComponent } from "./classes/ComponenBase";
-const ChildComponent = createWebComponent({src:"",type:"test"})
-customElements.define("my-child-component", ChildComponent);
+
+createWebComponent("my-web-component",{username:"Username", "should-display-mentions": false, "test": ""})
+
+createWebComponent("my-child-component",{src:"",type:"test"})
