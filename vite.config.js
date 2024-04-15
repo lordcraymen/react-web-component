@@ -11,7 +11,7 @@ export default defineConfig({
   // 👇 Insert these lines
   build: {
     lib: {
-      entry: "./src/index.js",
+      entry: "./src/index.jsx",
       name: "subscription",
       fileName: (format) => `subscription.${format}.js`,
     },

@@ -5,13 +5,12 @@ const UPDATE_EVENT = 'ComponentBase:Update'
 
 class ComponentBase extends HTMLElement {   
     
-    private root;
     private config;
-    private subscribers = new WeakMap<ComponentBase,any>();
+    private subscribers = new Map<ComponentBase,any>();
     private isDirty = false;
 
     
-    constructor(config) {
+    constructor(config = {}) {
         super();
         this.config = config;
         for (let key in config) {
@@ -26,13 +25,16 @@ class ComponentBase extends HTMLElement {
         return [];
     }
 
+    private state = {};
     private getState = () => {
-        const state = {};
-        for (const attr of Object.keys(this.config)) {
-            state[attr] = this.getAttribute(attr);
+        if (this.isDirty) {
+            this.state = {};
+            for (const attr of Object.keys(this.config)) {
+                this.state[attr] = this.getAttribute(attr);
+            }
+            this.isDirty = false;
         }
-        this.isDirty = false;
-        return state;
+        return this.state;
     }
 
     private handleUpdate = (e) => {
@@ -42,16 +44,18 @@ class ComponentBase extends HTMLElement {
             !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: { getState: this.getState }, ...eventProperties }))
             this.isDirty = true;
         }
+        
     }
 
+    private cleanup = () => {}
     protected connectedCallback() {
+        this.cleanup = this.config.onMount?.(this)
         !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, {  detail: { getState: this.getState }, ...eventProperties }))
         this.isDirty = true;
     }
  
 
     protected attributeChangedCallback(name: string, previousValue: unknown, newValue: unknown) {
-        console.log(this.isDirty)
         if (previousValue !== newValue) {
             if(!this.isDirty) { 
                 this.dispatchEvent(new CustomEvent(UPDATE_EVENT, {  detail: { getState: this.getState }, ...eventProperties })) 
@@ -65,6 +69,8 @@ class ComponentBase extends HTMLElement {
     protected disconnectedCallback() {
         this.dispatchEvent(new Event(UPDATE_EVENT));
         this.removeEventListener(UPDATE_EVENT, this.handleUpdate);
+        this.cleanup();
+        this.subscribers.clear();
     }
     
     onAttributeChange(name: string, newValue: unknown) {}
