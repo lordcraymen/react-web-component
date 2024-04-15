@@ -4,6 +4,7 @@ const UPDATE_EVENT = 'ComponentBase:Update'
 
 
 class ComponentBase extends HTMLElement {   
+    
     private root;
     private subscribers = new WeakMap<ComponentBase,any>();
     private isDirty = false;
@@ -36,20 +37,27 @@ class ComponentBase extends HTMLElement {
             e.stopPropagation();
             this.subscribers.set(e.target,e.detail);
             !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: this.getState, ...eventProperties }))
+            this.isDirty = true;
         }
     }
 
     protected connectedCallback() {
         !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: this.getState, ...eventProperties }))
+        this.isDirty = true;
     }
-
+ 
+/*
     protected attributeChangedCallback(name: string, previousValue: unknown, newValue: unknown) {
+        
         if (previousValue !== newValue) {
             if(!this.isDirty) this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: this.getState, ...eventProperties }))
             this.isDirty = true;
             this.onAttributeChange(name, newValue);
         }
+        
     }
+    */
+    
 
     protected disconnectedCallback() {
         this.dispatchEvent(new Event(UPDATE_EVENT));
@@ -57,14 +65,11 @@ class ComponentBase extends HTMLElement {
     }
     
     onAttributeChange(name: string, newValue: unknown) {}
+   
 
 }
 
-interface ComponentInterface {
-    [key: string]: any;
-}
-
-const createWebComponent = (name, _interface: ComponentInterface) => {
+const createWebComponent = (name, _interface = {}) => {
     if(!name) return
     
     const ComponentClass = class extends ComponentBase {
