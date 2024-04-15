@@ -8,8 +8,11 @@ const onParentMount = (host) => {
     const root = ReactDOM.createRoot(host.shadowRoot);
     root.render(<Scene />)
 }
-const ParentComponent = createWebComponent({username:"Username", "should-display-mentions": false, "test": "", onMount: onParentMount })
+const ParentComponent = createWebComponent({username:"Username", "should-display-mentions": false, "test": ""}, { onMount: onParentMount })
 customElements.define("my-web-component", ParentComponent);
 
-const ChildComponent = createWebComponent({src:"",type:"test"})
+
+const onUpdate = (_,children) => <div>{children}</div>
+
+const ChildComponent = createWebComponent({src:"",type:"test"},{onUpdate: onUpdate})
 customElements.define("my-child-component", ChildComponent);

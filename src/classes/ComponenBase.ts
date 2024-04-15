@@ -5,16 +5,18 @@ const UPDATE_EVENT = 'ComponentBase:Update'
 
 class ComponentBase extends HTMLElement {   
     
-    private config;
+    private componentInterface;
+    private handlers;
     private subscribers = new Map<ComponentBase,any>();
     private isDirty = false;
 
     
-    constructor(config = {}) {
+    constructor(componentInterface = {},handlers = {}) {
         super();
-        this.config = config;
-        for (let key in config) {
-            this[key] = config[key];
+        this.componentInterface = componentInterface;
+        this.handlers = handlers;
+        for (let key in componentInterface) {
+            this[key] = componentInterface[key];
         }
         this.addEventListener(UPDATE_EVENT, this.handleUpdate);
     }
@@ -28,10 +30,15 @@ class ComponentBase extends HTMLElement {
     private state = {};
     private getState = () => {
         if (this.isDirty) {
-            this.state = {};
-            for (const attr of Object.keys(this.config)) {
-                this.state[attr] = this.getAttribute(attr);
-            }
+            this.state = null;
+                if(this.handlers.onUpdate) {
+                    this.state = this.handlers.onUpdate(this, this.subscribers.values());
+                } else {
+                    this.state = {};
+                for (const attr of Object.keys(this.componentInterface)) {
+                    this.state[attr] = this.getAttribute(attr);
+                }
+        }
             this.isDirty = false;
         }
         return this.state;
@@ -41,6 +48,7 @@ class ComponentBase extends HTMLElement {
        if (e.target instanceof ComponentBase && this !== e.target) {
             e.stopPropagation();
             this.subscribers.set(e.target,e.detail);
+            console.log(Array.from(this.subscribers.values()).map(g => g.getState()))
             !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: { getState: this.getState }, ...eventProperties }))
             this.isDirty = true;
         }
@@ -49,7 +57,7 @@ class ComponentBase extends HTMLElement {
 
     private cleanup = () => {}
     protected connectedCallback() {
-        this.cleanup = this.config.onMount?.(this)
+        this.cleanup = this.handlers.onMount?.(this)
         !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, {  detail: { getState: this.getState }, ...eventProperties }))
         this.isDirty = true;
     }
@@ -77,10 +85,10 @@ class ComponentBase extends HTMLElement {
    
 }
 
-function createWebComponent(config) {
+function createWebComponent(config,handlers) {
     return class extends ComponentBase {
         constructor() {
-            super(config)
+            super(config,handlers)
         }
 
         static get observedAttributes() {
