@@ -21,18 +21,17 @@ class ComponentBase extends HTMLElement {
         this.addEventListener(UPDATE_EVENT, this.handleUpdate);
     }
     
-    public getSubscribers = () => this.subscribers;
+    public getSubscribers = () => Array.from(this.subscribers.values()).map(child => child.getState());
 
     static get observedAttributes() {
         return [];
     }
 
-    private state = {};
+    private state = null;
     private getState = () => {
         if (this.isDirty) {
-            this.state = null;
                 if(this.handlers.onUpdate) {
-                    this.state = this.handlers.onUpdate(this, this.subscribers.values());
+                    this.state = Array.from(this.subscribers.values()).map(child => child.getState());
                 } else {
                     this.state = {};
                 for (const attr of Object.keys(this.componentInterface)) {
@@ -48,8 +47,8 @@ class ComponentBase extends HTMLElement {
        if (e.target instanceof ComponentBase && this !== e.target) {
             e.stopPropagation();
             this.subscribers.set(e.target,e.detail);
-            console.log(Array.from(this.subscribers.values()).map(g => g.getState()))
             !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: { getState: this.getState }, ...eventProperties }))
+            this.handlers.onUpdate(this,this.getState())
             this.isDirty = true;
         }
         
