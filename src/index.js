@@ -1,5 +1,7 @@
 import { createWebComponent } from "./classes/ComponenBase";
 
-createWebComponent("my-web-component",{username:"Username", "should-display-mentions": false, "test": ""})
+const ParentComponent = createWebComponent({username:"Username", "should-display-mentions": false, "test": ""})
+customElements.define("my-web-component", ParentComponent);
 
-createWebComponent("my-child-component",{src:"",type:"test"})
+const ChildComponent = createWebComponent({src:"",type:"test"})
+customElements.define("my-child-component", ChildComponent);

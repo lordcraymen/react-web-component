@@ -6,25 +6,29 @@ const UPDATE_EVENT = 'ComponentBase:Update'
 class ComponentBase extends HTMLElement {   
     
     private root;
+    private config;
     private subscribers = new WeakMap<ComponentBase,any>();
     private isDirty = false;
 
     
-    constructor() {
+    constructor(config) {
         super();
+        this.config = config;
+        for (let key in config) {
+            this[key] = config[key];
+        }
         this.addEventListener(UPDATE_EVENT, this.handleUpdate);
     }
     
     public getSubscribers = () => this.subscribers;
 
-    static observedAttributes = () => {
+    static get observedAttributes() {
         return [];
     }
 
     private getState = () => {
-        const observedAttributes = ComponentBase.observedAttributes();
         const state = {};
-        for (const attr of observedAttributes) {
+        for (const attr of Object.keys(this.config)) {
             state[attr] = this.getAttribute(attr);
         }
         this.isDirty = false;
@@ -32,33 +36,32 @@ class ComponentBase extends HTMLElement {
     }
 
     private handleUpdate = (e) => {
-        console.log(e.target, "is receiving an update")
-        if (e.target instanceof ComponentBase) {
+       if (e.target instanceof ComponentBase && this !== e.target) {
             e.stopPropagation();
             this.subscribers.set(e.target,e.detail);
-            !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: this.getState, ...eventProperties }))
+            !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: { getState: this.getState }, ...eventProperties }))
             this.isDirty = true;
         }
     }
 
     protected connectedCallback() {
-        !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: this.getState, ...eventProperties }))
+        !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, {  detail: { getState: this.getState }, ...eventProperties }))
         this.isDirty = true;
     }
  
-/*
+
     protected attributeChangedCallback(name: string, previousValue: unknown, newValue: unknown) {
-        
+        console.log(this.isDirty)
         if (previousValue !== newValue) {
-            if(!this.isDirty) this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: this.getState, ...eventProperties }))
+            if(!this.isDirty) { 
+                this.dispatchEvent(new CustomEvent(UPDATE_EVENT, {  detail: { getState: this.getState }, ...eventProperties })) 
+            }
             this.isDirty = true;
             this.onAttributeChange(name, newValue);
         }
         
     }
-    */
     
-
     protected disconnectedCallback() {
         this.dispatchEvent(new Event(UPDATE_EVENT));
         this.removeEventListener(UPDATE_EVENT, this.handleUpdate);
@@ -66,27 +69,18 @@ class ComponentBase extends HTMLElement {
     
     onAttributeChange(name: string, newValue: unknown) {}
    
-
 }
 
-const createWebComponent = (name, _interface = {}) => {
-    if(!name) return
-    
-    const ComponentClass = class extends ComponentBase {
-        static observedAttributes() {
-            return Object.keys(_interface);
-        }
-
+function createWebComponent(config) {
+    return class extends ComponentBase {
         constructor() {
-            super();
-            Object.assign(this, _interface);
+            super(config)
         }
 
-        [Symbol.iterator]() {
-            return Object.entries(_interface)[Symbol.iterator]();
+        static get observedAttributes() {
+            return Object.keys(config) || [];
         }
-    }
-    customElements.define(name, ComponentClass);
+    };
 }
 
 export { createWebComponent, ComponentBase };
