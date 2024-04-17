@@ -9,15 +9,17 @@ class ComponentBase extends HTMLElement {
     private handlers;
     private subscribers = new Map<ComponentBase,any>();
     private isDirty = false;
+    private onGetState = (state) => state
 
     
-    constructor(componentInterface = {},handlers = {}) {
+    constructor(componentInterface = {},handlers) {
         super();
         this.componentInterface = componentInterface;
         this.handlers = handlers;
         for (let key in componentInterface) {
             this[key] = componentInterface[key];
         }
+        this.onGetState = handlers.onGetState || this.onGetState;
         this.addEventListener(UPDATE_EVENT, this.handleUpdate);
     }
     
@@ -28,16 +30,13 @@ class ComponentBase extends HTMLElement {
     }
 
     private state = null;
+    private props = {};
     private getState = () => {
         if (this.isDirty) {
-                if(this.handlers.onUpdate) {
-                    this.state = Array.from(this.subscribers.values()).map(child => child.getState());
-                } else {
-                    this.state = {};
                 for (const attr of Object.keys(this.componentInterface)) {
-                    this.state[attr] = this.getAttribute(attr);
+                    this.props[attr] = this.getAttribute(attr);
                 }
-        }
+                this.state = this.onGetState({ ...this.props, children:this.getSubscribers() || [] });
             this.isDirty = false;
         }
         return this.state;
@@ -47,8 +46,8 @@ class ComponentBase extends HTMLElement {
        if (e.target instanceof ComponentBase && this !== e.target) {
             e.stopPropagation();
             this.subscribers.set(e.target,e.detail);
-            !this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: { getState: this.getState }, ...eventProperties }))
-            this.handlers.onUpdate(this,this.getState())
+            //!this.isDirty && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, { detail: { getState: this.getState }, ...eventProperties }))
+            this.handlers.onUpdate({...this.getState(),root: this.root})
             this.isDirty = true;
         }
         
@@ -68,7 +67,7 @@ class ComponentBase extends HTMLElement {
                 this.dispatchEvent(new CustomEvent(UPDATE_EVENT, {  detail: { getState: this.getState }, ...eventProperties })) 
             }
             this.isDirty = true;
-            this.onAttributeChange(name, newValue);
+            this.handlers.onUpdate?.({...this.getState(), root: this.root})
         }
         
     }
@@ -79,8 +78,6 @@ class ComponentBase extends HTMLElement {
         this.cleanup();
         this.subscribers.clear();
     }
-    
-    onAttributeChange(name: string, newValue: unknown) {}
    
 }
 

@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei'
 import { Link } from '../Link';
 import { ViewPoint, ViewPointProvider } from '../ViewPoint/Viewpoint';
 
 const Box = ({ isFocused, ...props }) => {
-  const ref = useRef();
+  const ref = useRef(new THREE.Mesh());
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
 
@@ -26,7 +27,7 @@ const Box = ({ isFocused, ...props }) => {
 };
 
 
-const Scene = () => {
+const Scene = ({children}) => {
 
   return (
       <Canvas>
@@ -40,8 +41,14 @@ const Scene = () => {
           zoomSpeed={2}
           panSpeed={0.5}
           rotateSpeed={0.5}
-        />
-        <ViewPointProvider>
+        /> 
+        {children} 
+      </Canvas>
+   
+  );
+};
+/*
+<ViewPointProvider>
         <ViewPoint position={[0, 5, 10]}>
           {({setActive}) => <Link
             href="#Box1"
@@ -61,9 +68,5 @@ const Scene = () => {
           </Link>}
         </ViewPoint>
         </ViewPointProvider>
-      </Canvas>
-   
-  );
-};
-
+*/
 export { Scene };
