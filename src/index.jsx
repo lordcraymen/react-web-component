@@ -16,9 +16,7 @@ const ParentComponent = createWebComponent(
             host.root = ReactDOM.createRoot(host.shadowRoot);
         }, 
         onUpdate: ({root,children,...props}) => {
-            console.log("onParentUpdate")
-            console.log(children)
-            root.render(<><h1>{props.username}</h1>{children}</>)
+            root?.render(<><h1>{props.username}</h1>{...children}</>)
         } 
     })
 customElements.define("my-web-component", ParentComponent);
@@ -30,6 +28,6 @@ const ChildComponent = createWebComponent(
         "type":"test"
     },
     {
-        onGetState: ({children,type}) => <div>{type}</div>
+        onUpdate: ({type,src,key}) => <div key={key}>{type},{src}</div>
     })
 customElements.define("my-child-component", ChildComponent);
