@@ -24,7 +24,7 @@ customElements.define("my-web-component", ParentComponent);
 
 const ChildComponent = createWebComponent(
     {
-        "src":"",
+        "src":"src",
         "type":"test"
     },
     {
