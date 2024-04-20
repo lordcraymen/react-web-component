@@ -1,6 +1,7 @@
 const eventProperties = {  bubbles: true, composed: true, cancelable: true };
 
 const UPDATE_EVENT = 'ComponentBase:Update'
+const UNSUBSCRIBE_EVENT = 'ComponentBase:Unsubscribe'
 
 
 class ComponentBase extends HTMLElement {   
@@ -10,7 +11,7 @@ class ComponentBase extends HTMLElement {
     private componentInterface;
     private handlers;
     private subscribers = new Map<ComponentBase,any>();
-    private cleanup = () => {};
+    private cleanup;
 
     static observedAttributes = [];
     
@@ -19,10 +20,13 @@ class ComponentBase extends HTMLElement {
         this.key = Math.random().toString(36).substring(7);
         this.componentInterface = componentInterface;
         this.handlers = handlers;
+        this.cleanup = () => {};
+        this.state = {};
         for (let key in componentInterface) {
             this[key] = componentInterface[key];
         }
         this.addEventListener(UPDATE_EVENT, this.handleChildUpdate);
+        this.addEventListener(UNSUBSCRIBE_EVENT, this.handleUnsubscribe);
     }
     
     protected getSubscribedChildren = () => Array.from(this.subscribers.values())
@@ -50,6 +54,17 @@ class ComponentBase extends HTMLElement {
             update && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, {  detail: update, ...eventProperties }))
         }  
     }
+
+    private handleUnsubscribe = (e) => {
+        if (e.detail.sender instanceof ComponentBase && this.subscribers.has(e.detail.sender)) {
+            console.log("unsubscribing",e.detail.sender,"from",this,"with",this.subscribers.size,"subscribers")
+            e.stopPropagation();
+            this.subscribers.delete(e.detail.sender);
+            this.state = this.getProps()
+            const update = this.handlers.onUpdate?.(this.state)
+            update && this.dispatchEvent(new CustomEvent(UPDATE_EVENT, {  detail: update, ...eventProperties }))
+        }
+    }
     
 
     protected connectedCallback() {
@@ -70,11 +85,13 @@ class ComponentBase extends HTMLElement {
     }
     
     
-    protected disconnectedCallback() {
-        this.dispatchEvent(new Event(UPDATE_EVENT));
+    protected disconnectedCallback() { // it seems that in this callback the node is already detached from the dom, and parentElement and parentNode are already null.... 
+        //how can I tell the element this element is subscribed to, to remove it from the the parent subscriber map?
+        console.log("unsubscribing",this, this.parentNode)
         this.removeEventListener(UPDATE_EVENT, this.handleChildUpdate);
         this.subscribers.clear();
-        this.cleanup();
+        this.parentElement?.dispatchEvent(new CustomEvent(UNSUBSCRIBE_EVENT, {detail: {sender: this}, ...eventProperties}));
+        //this.cleanup();
     }
     
    
