@@ -1,30 +1,34 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei'
 import { Link } from '../Link';
 import { ViewPoint, ViewPointProvider } from '../ViewPoint/Viewpoint';
+import { useLoader } from '@react-three/fiber'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 const Box = ({position = [0,0,0] ,scale = 1, rotation = 1 }) => {
   const ref = useRef(new THREE.Mesh());
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
-
   return (
     <mesh
       ref={ref}
-      position={new THREE.Vector3(position)} // Adjust for focus
-      scale={new THREE.Vector3(scale)} // Adjust for focus
-      rotation={new THREE.Vector3(rotation)} // Adjust for focus
+      {...{position,rotation,scale}}
       onPointerOver={(event) => hover(true)}
       onPointerOut={(event) => hover(false)}
       onPointerDown={(event) => click(true)}
-      onPointerUP={(event) => click(false)}
+      onPointerUp={(event) => click(false)}
     >
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial color={clicked || hovered ? 'hotpink' : 'orange'} />
     </mesh>
   );
+};
+
+const Model = ({ src, position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1, 1], children }) => {
+  const gltf = useLoader(GLTFLoader, src)
+  return <primitive object={gltf.scene} {...{position,rotation,scale}}/>
 };
 
 
@@ -70,4 +74,4 @@ const Scene = ({children}) => {
         </ViewPoint>
         </ViewPointProvider>
 */
-export { Scene, Box };
+export { Scene, Box, Model };

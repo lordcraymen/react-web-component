@@ -2,9 +2,9 @@ import ReactDOM from "react-dom/client";
 import React from "react";
 import { createWebComponent } from "./classes/ComponenBase";
 import { HostContext } from "./components/useHostContext/useHostContext";
-import { Scene, Box } from "./components/Scene";
+import { Scene, Box, Model } from "./components/Scene";
 
-const ParentComponent = createWebComponent(
+const SceneComponent = createWebComponent(
     {
         "username":"Username",
         "should-display-mentions": false, 
@@ -19,15 +19,43 @@ const ParentComponent = createWebComponent(
             root?.render(<Scene key={instanceID}>{...children}</Scene>)
         } 
     })
-customElements.define("my-web-component", ParentComponent);
+customElements.define("mc-scene", SceneComponent);
 
 
-const ChildComponent = createWebComponent(
+const BoxComponent = createWebComponent(
     {
-        "src":"src",
-        "type":"test"
+        "position":[0,0,0],
+        "rotation":[0,0,0],
+        "scale":[1,1,1]
     },
     {
-        onUpdate: ({type,src,instanceID}) => <Box key={instanceID} />
+        onUpdate: ({instanceID,position,rotation,scale}) => 
+        {
+            return <Box key={instanceID} 
+                        position={String(position).split(",")} 
+                        rotation={String(rotation).split(",")}
+                        scale={String(scale).split(",")}
+                    />
+        }
     })
-customElements.define("my-child-component", ChildComponent);
+customElements.define("mc-box", BoxComponent);
+
+const ModelComponent = createWebComponent(
+    {
+        "src":"",
+        "position":[0,0,0],
+        "rotation":[0,0,0],
+        "scale":[1,1,1]
+    },
+    {
+        onUpdate: ({instanceID,src,position,rotation,scale}) => 
+        {
+            return src && <Model key={instanceID} 
+                        src={src}
+                        position={String(position).split(",")} 
+                        rotation={String(rotation).split(",")}
+                        scale={String(scale).split(",")}
+                    />
+        }
+    })
+customElements.define("mc-model", ModelComponent);
