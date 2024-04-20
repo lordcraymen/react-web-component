@@ -2,7 +2,7 @@ import ReactDOM from "react-dom/client";
 import React from "react";
 import { createWebComponent } from "./classes/ComponenBase";
 import { HostContext } from "./components/useHostContext/useHostContext";
-import { Scene } from "./components/Scene";
+import { Scene, Box } from "./components/Scene";
 
 const ParentComponent = createWebComponent(
     {
@@ -15,8 +15,8 @@ const ParentComponent = createWebComponent(
             host.attachShadow({ mode: "open" });
             host.root = ReactDOM.createRoot(host.shadowRoot);
         }, 
-        onUpdate: ({root,children,...props}) => {
-            root?.render(<><h1>{props.username}</h1>{...children}</>)
+        onUpdate: ({root,children,instanceID}) => {
+            root?.render(<Scene key={instanceID}>{...children}</Scene>)
         } 
     })
 customElements.define("my-web-component", ParentComponent);
@@ -28,6 +28,6 @@ const ChildComponent = createWebComponent(
         "type":"test"
     },
     {
-        onUpdate: ({type,src,key}) => <div key={key}>{type},{src}</div>
+        onUpdate: ({type,src,instanceID}) => <Box key={instanceID} />
     })
 customElements.define("my-child-component", ChildComponent);

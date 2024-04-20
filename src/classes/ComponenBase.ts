@@ -4,12 +4,14 @@ const SUBSCRIBE_EVENT = 'ComponentBase:Subscribe'
 
 class ComponentBase extends HTMLElement {
 
-    private state;
-    private instanceID;
-    private subscription;
     private componentInterface;
     private handlers;
+
+    private subscription;
     private subscribers = new Map<ComponentBase, any>();
+
+    private state;
+    private instanceID;
 
     static observedAttributes = [];
 
@@ -26,7 +28,9 @@ class ComponentBase extends HTMLElement {
         this.addEventListener(SUBSCRIBE_EVENT, this.handleChildSubscription);
     }
 
-    protected getSubscribedChildren = () => Array.from(this.subscribers.values())
+    protected getSubscribedChildrenState = () => Array.from(this.subscribers.keys())
+    .sort((a, b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
+    .map(key => this.subscribers.get(key));
 
     protected getProps = () => {
         const props = {
@@ -34,8 +38,8 @@ class ComponentBase extends HTMLElement {
                 state[key] = this.attributes.getNamedItem(key)?.value || this.componentInterface[key];
                 return state;
             }, {}),
-            key: this.instanceID,
-            children: this.getSubscribedChildren(),
+            instanceID: this.instanceID,
+            children: this.getSubscribedChildrenState(),
             root: this["root"]
         };
         return props;
@@ -51,7 +55,7 @@ class ComponentBase extends HTMLElement {
             e.stopPropagation();
             this.subscribers.set(e.target, null);
             e.detail.setSubscriptionTo({
-                update: (update) => { this.subscribers.set(this, update); this.update() },
+                update: (update) => { this.subscribers.set(e.target, update); this.update() },
                 unsubscribe: () => { this.subscribers.delete(e.target); this.update() }
             })
         }
@@ -59,8 +63,7 @@ class ComponentBase extends HTMLElement {
 
     protected connectedCallback() {
         this.handlers.onMount?.(this)
-        const update = this.handlers.onUpdate?.(this.state)
-        update && this.parentElement?.dispatchEvent(new CustomEvent(SUBSCRIBE_EVENT, {
+        this.dispatchEvent(new CustomEvent(SUBSCRIBE_EVENT, {
             detail:
             {
                 setSubscriptionTo: (sub) => this.subscription = sub
@@ -72,8 +75,8 @@ class ComponentBase extends HTMLElement {
 
     protected attributeChangedCallback(name: string, previousValue: unknown, newValue: unknown) {
         if (this.state[name] !== newValue) {
-            this.state[name] = newValue
-            this.update()
+            this.state[name] = newValue;
+            this.update();
         }
     }
 
