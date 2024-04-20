@@ -28,7 +28,25 @@ const Box = ({position = [0,0,0] ,scale = 1, rotation = 1 }) => {
 
 const Model = ({ src, position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1, 1], children }) => {
   const gltf = useLoader(GLTFLoader, src)
-  return <primitive object={gltf.scene} {...{position,rotation,scale}}/>
+  return <primitive object={gltf.nodes.mesh_0.clone()} {...{position,rotation,scale}}/>
+};
+
+const Light = ({ type, position = [0, 0, 0], intensity = 1, angle = 0.15, penumbra = 1, decay = 0 }) => {
+  let light;
+  switch (type) {
+    case 'ambient':
+      light = <ambientLight intensity={intensity} />;
+      break;
+    case 'spot':
+      light = <spotLight position={position} angle={angle} penumbra={penumbra} decay={decay} intensity={intensity} />;
+      break;
+    case 'point':
+      light = <pointLight position={position} decay={decay} intensity={intensity} />;
+      break;
+    default:
+      light = null;
+  }
+  return light;
 };
 
 
@@ -74,4 +92,4 @@ const Scene = ({children}) => {
         </ViewPoint>
         </ViewPointProvider>
 */
-export { Scene, Box, Model };
+export { Scene, Box, Model, Light };

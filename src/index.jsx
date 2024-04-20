@@ -2,7 +2,7 @@ import ReactDOM from "react-dom/client";
 import React from "react";
 import { createWebComponent } from "./classes/ComponenBase";
 import { HostContext } from "./components/useHostContext/useHostContext";
-import { Scene, Box, Model } from "./components/Scene";
+import { Scene, Box, Model, Light } from "./components/Scene";
 
 const SceneComponent = createWebComponent(
     {
@@ -59,3 +59,26 @@ const ModelComponent = createWebComponent(
         }
     })
 customElements.define("mc-model", ModelComponent);
+
+const LightComponent = createWebComponent(
+    {
+        "type":"spot",
+        "color": "#ffffff",
+        "intensity": 1,
+        "position": [0, 0, 0]
+    },
+    {
+        onUpdate: ({ instanceID, color, type, intensity, position }) => {
+            return (
+                <Light
+                    type={type}
+                    key={instanceID}
+                    color={color}
+                    intensity={intensity}
+                    position={String(position).split(",")}
+                />
+            );
+        }
+    }
+);
+customElements.define("mc-light", LightComponent);

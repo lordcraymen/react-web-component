@@ -5,13 +5,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Example</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width:100vw;
+    height:100vh;
+  }
+  #test {
+    width: 100vw;
+    height: 100vh;
+  }
+  </style>
 </head>
 
 <body>
   <mc-scene id="test">
-    <mc-model src="src/assets/example.glb" ></mc-model>
+    <mc-model src="src/assets/example.glb" scale="100,100,100"></mc-model>
   </mc-scene>
-  <script type="module" src="src/index.jsx"></script>
+  <script type="module" src="src/index.jsx" ></script>
 </body>
 
 </html>
