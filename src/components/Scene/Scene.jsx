@@ -4,8 +4,6 @@ import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei'
 import { Link } from '../Link';
 import { ViewPoint, ViewPointProvider } from '../ViewPoint/Viewpoint';
-import { useLoader } from '@react-three/fiber'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 const Box = ({position = [0,0,0] ,scale = 1, rotation = 1 }) => {
   const ref = useRef(new THREE.Mesh());
@@ -24,11 +22,6 @@ const Box = ({position = [0,0,0] ,scale = 1, rotation = 1 }) => {
       <meshStandardMaterial color={clicked || hovered ? 'hotpink' : 'orange'} />
     </mesh>
   );
-};
-
-const Model = ({ src, position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1, 1], children }) => {
-  const gltf = useLoader(GLTFLoader, src)
-  return <primitive object={gltf.nodes.mesh_0.clone()} {...{position,rotation,scale}}/>
 };
 
 const Light = ({ type, position = [0, 0, 0], intensity = 1, angle = 0.15, penumbra = 1, decay = 0 }) => {
@@ -89,4 +82,4 @@ const Scene = ({children}) => {
         </ViewPoint>
         </ViewPointProvider>
 */
-export { Scene, Box, Model, Light };
+export { Scene, Box, Light };

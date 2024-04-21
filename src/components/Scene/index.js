@@ -1,2 +1,2 @@
-import { Scene, Box, Model, Light } from "./Scene"
-export { Scene, Box, Model, Light }
+import { Scene, Box, Light } from "./Scene"
+export { Scene, Box, Light }

@@ -2,7 +2,8 @@ import ReactDOM from "react-dom/client";
 import React from "react";
 import { createWebComponent } from "./classes/ComponenBase";
 import { HostContext } from "./components/useHostContext/useHostContext";
-import { Scene, Box, Model, Light } from "./components/Scene";
+import { Scene, Box, Light } from "./components/Scene";
+import { Model } from "./components/Model";
 import { XR } from '@react-three/xr';
 
 const SceneComponent = createWebComponent(
@@ -49,6 +50,7 @@ const ModelComponent = createWebComponent(
         "scale":[1,1,1]
     },
     {
+        onMount: (host) => { host.tabIndex = 0; host.addEventListener('focus', ()=> alert("fokus!")) },
         onUpdate: ({instanceID,src,position,rotation,scale}) => 
         {
             return src && <Model key={instanceID} 
