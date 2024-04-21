@@ -3,6 +3,7 @@ import React from "react";
 import { createWebComponent } from "./classes/ComponenBase";
 import { HostContext } from "./components/useHostContext/useHostContext";
 import { Scene, Box, Model, Light } from "./components/Scene";
+import { XR } from '@react-three/xr';
 
 const SceneComponent = createWebComponent(
     {
@@ -62,7 +63,7 @@ customElements.define("mc-model", ModelComponent);
 
 const LightComponent = createWebComponent(
     {
-        "type":"spot",
+        "type":"ambient",
         "color": "#ffffff",
         "intensity": 1,
         "position": [0, 0, 0]
@@ -82,3 +83,16 @@ const LightComponent = createWebComponent(
     }
 );
 customElements.define("mc-light", LightComponent);
+
+const XRComponent = createWebComponent(
+    {
+    },
+    {
+        onUpdate: ({ instanceID, color, type, intensity, position }) => {
+            return (
+                <XR>{children}</XR>
+            );
+        }
+    }
+);
+customElements.define("mc-xr", XRComponent);

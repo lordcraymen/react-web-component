@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -14,6 +14,7 @@
     "@react-three/a11y": "^3.0.0",
     "@react-three/drei": "^9.105.2",
     "@react-three/fiber": "^8.16.1",
+    "@react-three/xr": "^5.7.1",
     "@types/three": "^0.163.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

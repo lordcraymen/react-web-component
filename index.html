@@ -22,7 +22,10 @@
 
 <body>
   <mc-scene id="test">
-    <mc-model src="src/assets/example.glb" scale="100,100,100"></mc-model>
+    <mc-xr>
+      <mc-model src="src/assets/example.glb" scale="10,10,10"></mc-model>
+    </mc-xr>
+    <mc-light type="ambient" intensity="2"></mc-model>
   </mc-scene>
   <script type="module" src="src/index.jsx" ></script>
 </body>
