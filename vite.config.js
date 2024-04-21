@@ -8,7 +8,6 @@ export default defineConfig({
     },
   },
   plugins: [react()],
-  // 👇 Insert these lines
   build: {
     lib: {
       entry: "./src/index.jsx",
@@ -16,5 +15,16 @@ export default defineConfig({
       fileName: (format) => `subscription.${format}.js`,
     },
     target: "esnext",
+    rollupOptions: {
+      external: ['react', 'three', 'react-dom'],
+      output: {
+        globals: {
+          react: 'React',
+          three: 'THREE'
+        }
+      }
+    }
   },
 })
+
+
