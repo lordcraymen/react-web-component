@@ -4,7 +4,20 @@ import { createWebComponent } from "./classes/ComponenBase";
 import { HostContext } from "./components/useHostContext/useHostContext";
 import { Scene, Box, Light } from "./components/Scene";
 import { Model } from "./components/Model";
+import { Layer } from "./components/Layer";
 import { XR } from '@react-three/xr';
+
+import { createTestWebComponent } from "./classes/ComponentTest";
+
+const GrandfatherComponent = createTestWebComponent({name:"Grandfather"})
+customElements.define("mc-grandfather", GrandfatherComponent);
+
+const FatherComponent = createTestWebComponent({name:"Father"})   
+customElements.define("mc-father", FatherComponent);
+
+const ChildComponent = createTestWebComponent({name:"Child"})
+customElements.define("mc-child", ChildComponent);
+
 
 const SceneComponent = createWebComponent(
     {
@@ -18,7 +31,8 @@ const SceneComponent = createWebComponent(
             host.root = ReactDOM.createRoot(host.shadowRoot);
         }, 
         onUpdate: ({root,children,instanceID}) => {
-            root?.render(<Scene key={instanceID}>{...children}</Scene>)
+            console.log("SceneComponent onUpdate", children)
+            root?.render(<Scene key={instanceID}>{children}</Scene>)
         } 
     })
 customElements.define("mc-scene", SceneComponent);
@@ -53,12 +67,12 @@ const ModelComponent = createWebComponent(
         onMount: (host) => { host.tabIndex = 0; host.addEventListener('focus', ()=> alert("fokus!")) },
         onUpdate: ({instanceID,src,position,rotation,scale}) => 
         {
-            return src && <Model key={instanceID} 
+            return src ? <Model key={"model_"+instanceID} 
                         src={src}
                         position={String(position).split(",")} 
                         rotation={String(rotation).split(",")}
                         scale={String(scale).split(",")}
-                    />
+                    />: null
         }
     })
 customElements.define("mc-model", ModelComponent);
@@ -98,3 +112,19 @@ const XRComponent = createWebComponent(
     }
 );
 customElements.define("mc-xr", XRComponent);
+
+const LayerComponent = createWebComponent(  
+    {
+        "opacity": 1,
+        "visible": true,
+        "layernumber": 0  },
+    {
+        onUpdate: ({ instanceID, children, opacity, visible, layernumber }) => {
+            return (
+                visible ? <Layer key={"Layer"+layernumber}>{children}</Layer> : null
+            );
+        }
+    }
+);
+
+customElements.define("mc-layer", LayerComponent);

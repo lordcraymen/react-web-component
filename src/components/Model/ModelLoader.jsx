@@ -22,7 +22,7 @@ const ModelLoader = ({ src, position, rotation, scale, children }) => {
 
   console.log(model)
   
-  return <primitive object={model.children[0].clone()} {...{position,rotation,scale}}>{children}</primitive>;
+  return <primitive object={model.scene.clone()} {...{position,rotation,scale}}>{children}</primitive>;
 };
 
-export default ModelLoader
+export { ModelLoader } 

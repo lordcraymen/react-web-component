@@ -51,8 +51,10 @@ class ComponentBase extends HTMLElement {
     }
 
     private handleChildSubscription = (e) => {
-        if (e.target instanceof ComponentBase && this !== e.target) {
+        console.log(e.target.instanceID, 'subscribing to', this.instanceID)
+        if (e.target.parentNode === this) { 
             e.stopPropagation();
+            console.log(e.target.instanceID, 'subscribed to', this.instanceID )
             this.subscribers.set(e.target, null);
             e.detail.setSubscriptionTo({
                 update: (update) => { this.subscribers.set(e.target, update); this.update() },

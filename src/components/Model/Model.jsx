@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import ModelLoader from './ModelLoader';
+import { ModelLoader }  from './ModelLoader';
 
 const Model = ({ src, position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 1, 1], children }) => {
   return (

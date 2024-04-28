@@ -21,10 +21,22 @@
 </head>
 
 <body>
+  <!--
   <mc-scene id="test">
-      <mc-model src="src/assets/example.usdz" scale="10,10,10"></mc-model>
+    <mc-layer layernumber="1" visible="false">
+      <mc-box></mc-box>
+    </mc-layer>
+    <mc-layer layernumber="2">
+      <mc-model src="src/assets/example.glb" scale="100,100,100" position="30,0,0"></mc-model>
+    </mc-layer>
     <mc-light type="ambient" intensity="2"></mc-model>
   </mc-scene>
+  -->
+  <mc-grandfather>
+    <mc-father>
+      <mc-child></mc-child>
+    </mc-father>
+  </mc-grandfather>
   <script type="module" src="src/index.jsx" ></script>
 </body>
 
