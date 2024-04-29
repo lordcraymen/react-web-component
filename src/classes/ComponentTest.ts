@@ -60,7 +60,7 @@ class ComponentTest extends HTMLElement {
         if (this._parent) {
             //const children = getOrderedChildrenState(this._subscribers);
             //const newState = this._handlers.onUpdate?.({...this._state,children}) || {...this._state, children};
-            sendUpdate(this, { action, newState: {name: this._state} } );
+            sendUpdate(this, { action, newState: {...this._state, children: {...this._subscribers.values()}} } );
         }
     }
 
