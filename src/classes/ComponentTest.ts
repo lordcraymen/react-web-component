@@ -16,7 +16,7 @@ class ComponentTest extends HTMLElement {
     protected _subscribers: Map<HTMLElement, unknown>;
     protected _instanceID: string;
     protected _handlers: { [handler: string]: Function };
-    protected _state: { [propname: string]: unknown };
+    private _state: { [propname: string]: unknown };
 
     static get observedAttributes() {
         return [];
@@ -27,47 +27,52 @@ class ComponentTest extends HTMLElement {
         
         this._instanceID = getUniqueID();
         this._handlers = handlers;
-        this._state = this._properties = properties;
+        this._properties = properties;
+         
+        Object.entries(properties).forEach(([key, value]) => this[key] = value);
+
+        this._state = {};
         
         this._subscribers = new Map();
-        console.log(`${this._properties.id} has been created`);
+
         this.addEventListener(NOTIFICATION_EVENT, this.handleEvent);
+        
     }
 
     private handleEvent = (e) => {
-        if (e.detail.sender !== this && e.detail.sender instanceof ComponentTest) {
+        if (e.target !== this && e.target instanceof ComponentTest) {
             e.stopPropagation();
             const actions = {
                 'update': () => {
-                    this._subscribers.set(e.detail.sender, e.detail.newState);
-                    console.log(e.detail.sender, 'updated', this._state.name, this._subscribers);
+                    this._subscribers.set(e.target, e.detail.newState);
+                    console.log(this.getAttribute("name"),"received", e.detail,"from", e.target.getAttribute("name"));
                 },
                 'unsubscribe': () => {
-                    this._subscribers.delete(e.detail.sender);
-                    console.log(e.detail.sender, 'unsubscribed from', this._state.name, this._subscribers);
+                    this._subscribers.delete(e.target);
                 }
             }
             actions[e.detail.action]?.();
+            this.sendAction("update");
         }
     }
 
-    protected sendAction = (action) => {
-        if (!this._parent) this._parent = this.parentElement;
+    private sendAction = (action) => {
         if (this._parent) {
-            this._state = this._handlers.onUpdate?.({ ...this._state, children: getOrderedChildrenState(this._subscribers) }) || {};
-            sendUpdate(this._parent, { action, sender: this, newState: { ...this._state } });
+            //const children = getOrderedChildrenState(this._subscribers);
+            //const newState = this._handlers.onUpdate?.({...this._state,children}) || {...this._state, children};
+            sendUpdate(this, { action, newState: {name: this._state} } );
         }
     }
 
     connectedCallback() {
-        console.log(`${this._state.name} has been connected`);
-        this.sendAction("update");
+        this._parent = this.parentElement;
+        console.log(this.getAttribute("name"),"is the child of", this._parent.getAttribute("name"));
+        this.sendAction("update");  
     }
 
-    attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    attributeChangedCallback(name: string, oldValue:string, newValue: string) {
         if (this._state[name] !== newValue) {
             this._state[name] = newValue
-            console.log(`${this._state.name} ID has been changed from ${oldValue} to ${newValue}`);
             this.sendAction("update");
         }
     }

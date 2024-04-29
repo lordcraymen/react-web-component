@@ -9,14 +9,8 @@ import { XR } from '@react-three/xr';
 
 import { createTestWebComponent } from "./classes/ComponentTest";
 
-const GrandfatherComponent = createTestWebComponent({name:"Grandfather"})
-customElements.define("mc-grandfather", GrandfatherComponent);
-
-const FatherComponent = createTestWebComponent({name:"Father"})   
-customElements.define("mc-father", FatherComponent);
-
-const ChildComponent = createTestWebComponent({name:"Child"})
-customElements.define("mc-child", ChildComponent);
+const TestComponent = createTestWebComponent({name:""})
+customElements.define("mc-test-component", TestComponent);
 
 
 const SceneComponent = createWebComponent(

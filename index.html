@@ -32,11 +32,13 @@
     <mc-light type="ambient" intensity="2"></mc-model>
   </mc-scene>
   -->
-  <mc-grandfather>
-    <mc-father>
-      <mc-child></mc-child>
-    </mc-father>
-  </mc-grandfather>
+  <mc-test-component name="Guenther">
+    <mc-test-component name="Peter">
+      <mc-test-component name="Florian">
+        <mc-test-component name="Hans"></mc-test-component>
+      </mc-test-component>
+    </mc-test-component>
+  </mc-test-component>
   <script type="module" src="src/index.jsx" ></script>
 </body>
 
