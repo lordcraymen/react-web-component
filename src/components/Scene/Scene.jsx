@@ -55,6 +55,7 @@ const Scene = ({children}) => {
           panSpeed={0.5}
           rotateSpeed={0.5}
         /> 
+        <Box position={[0, 0, 0]} />
         {children} 
       </Canvas>
    

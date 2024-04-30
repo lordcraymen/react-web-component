@@ -27,8 +27,7 @@ const SceneComponent = createTestWebComponent(
     { 
         onUpdate: ({root,children,instanceID}) => {
             !root.shadowRoot && (root.attachShadow({ mode: "open" }),root.reactRoot = ReactDOM.createRoot(root.shadowRoot));
-            console.log(<Scene key={instanceID}>{children}</Scene>)
-            root.reactRoot.render(<Scene key={instanceID}>{children}</Scene>)
+            root.reactRoot.render(<Scene>{children}</Scene>)
         } 
     })
 customElements.define("mc-scene", SceneComponent);
