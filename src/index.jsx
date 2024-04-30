@@ -1,6 +1,5 @@
 import ReactDOM from "react-dom/client";
 import React from "react";
-import { createWebComponent } from "./classes/ComponenBase";
 import { HostContext } from "./components/useHostContext/useHostContext";
 import { Scene, Box, Light } from "./components/Scene";
 import { Model } from "./components/Model";
@@ -22,26 +21,20 @@ const ChildComponent = createTestWebComponent({name:""},{onUpdate:({name,instanc
 customElements.define("mc-test-component", ChildComponent);
 
 
-const SceneComponent = createWebComponent(
+const SceneComponent = createTestWebComponent(
     {
-        "username":"Username",
-        "should-display-mentions": false, 
-        "test": ""
     },
     { 
-        onMount: (host) => {   
-            host.attachShadow({ mode: "open" });
-            host.root = ReactDOM.createRoot(host.shadowRoot);
-        }, 
         onUpdate: ({root,children,instanceID}) => {
-            console.log("SceneComponent onUpdate", children)
-            root?.render(<Scene key={instanceID}>{children}</Scene>)
+            !root.shadowRoot && (root.attachShadow({ mode: "open" }),root.reactRoot = ReactDOM.createRoot(root.shadowRoot));
+            console.log(<Scene key={instanceID}>{children}</Scene>)
+            root.reactRoot.render(<Scene key={instanceID}>{children}</Scene>)
         } 
     })
 customElements.define("mc-scene", SceneComponent);
 
 
-const BoxComponent = createWebComponent(
+const BoxComponent = createTestWebComponent(
     {
         "position":[0,0,0],
         "rotation":[0,0,0],
@@ -51,36 +44,36 @@ const BoxComponent = createWebComponent(
         onUpdate: ({instanceID,position,rotation,scale}) => 
         {
             return <Box key={instanceID} 
-                        position={String(position).split(",")} 
-                        rotation={String(rotation).split(",")}
-                        scale={String(scale).split(",")}
+                        position={String(position).split(",").map(Number)} 
+                        rotation={String(rotation).split(",").map(Number)}
+                        scale={String(scale).split(",").map(Number)}
                     />
         }
     })
 customElements.define("mc-box", BoxComponent);
 
-const ModelComponent = createWebComponent(
+const ModelComponent = createTestWebComponent(
     {
         "src":"",
-        "position":[0,0,0],
-        "rotation":[0,0,0],
-        "scale":[1,1,1]
+        "position":"[0,0,0]",
+        "rotation":"[0,0,0]",
+        "scale":"[1,1,1]"
     },
     {
         onMount: (host) => { host.tabIndex = 0; host.addEventListener('focus', ()=> alert("fokus!")) },
-        onUpdate: ({instanceID,src,position,rotation,scale}) => 
+        onUpdate: ({instanceID,src,position,rotation,scale,children}) => 
         {
             return src ? <Model key={"model_"+instanceID} 
-                        src={src}
-                        position={String(position).split(",")} 
-                        rotation={String(rotation).split(",")}
-                        scale={String(scale).split(",")}
-                    />: null
+                                src={src}
+                                position={String(position).split(",").map(Number)} 
+                                rotation={String(rotation).split(",").map(Number)}
+                                scale={String(scale).split(",").map(Number)}
+                            >{children}</Model>: null
         }
     })
 customElements.define("mc-model", ModelComponent);
 
-const LightComponent = createWebComponent(
+const LightComponent = createTestWebComponent(
     {
         "type":"ambient",
         "color": "#ffffff",
@@ -95,7 +88,7 @@ const LightComponent = createWebComponent(
                     key={instanceID}
                     color={color}
                     intensity={intensity}
-                    position={String(position).split(",")}
+                    position={String(position).split(",").map(Number)}
                 />
             );
         }
@@ -103,28 +96,28 @@ const LightComponent = createWebComponent(
 );
 customElements.define("mc-light", LightComponent);
 
-const XRComponent = createWebComponent(
+const XRComponent = createTestWebComponent(
     {
     },
     {
-        onUpdate: ({ instanceID, color, type, intensity, position }) => {
+        onUpdate: ({ instanceID, children }) => {
             return (
-                <XR>{children}</XR>
+                <XR key={instanceID}>{children}</XR>
             );
         }
     }
 );
 customElements.define("mc-xr", XRComponent);
 
-const LayerComponent = createWebComponent(  
+const LayerComponent = createTestWebComponent(  
     {
         "opacity": 1,
         "visible": true,
         "layernumber": 0  },
     {
-        onUpdate: ({ instanceID, children, opacity, visible, layernumber }) => {
+        onUpdate: ({ instanceID, children, opacity, visible }) => {
             return (
-                visible ? <Layer key={"Layer"+layernumber}>{children}</Layer> : null
+                visible ? <Layer key={instanceID} opacity={opacity}>{children}</Layer> : null
             );
         }
     }

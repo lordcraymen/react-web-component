@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 
-const Layer = ({ children, visible = true, layernumber=0 }) => {
-  /*
+let LayerCounter = 0;
+
+const Layer = ({ children, visible = true, opacity=1 }) => {
+  
   const { camera } = useThree();
-  visible && camera.layers.enable(layernumber);
+  const layernumber = useRef(LayerCounter++).current;
 
   console.log("layer", layernumber, visible);
   useEffect(() => {
@@ -19,9 +21,8 @@ const Layer = ({ children, visible = true, layernumber=0 }) => {
       camera.layers.disable(layernumber);
     };
   }, [camera, visible, layernumber]);
-  */
 
-  return visible ? <group layers={[layernumber]}>{children}</group> : null;
+  return visible ? <group layers={layernumber}>{children}</group> : null;
 };
 
 export { Layer };
