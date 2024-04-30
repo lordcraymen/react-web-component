@@ -32,11 +32,8 @@ class ComponentTest extends HTMLElement {
         Object.entries(properties).forEach(([key, value]) => this[key] = value);
 
         this._state = {};
-        
         this._subscribers = new Map();
-
         this.addEventListener(NOTIFICATION_EVENT, this.handleEvent);
-        
     }
 
 
@@ -46,13 +43,11 @@ class ComponentTest extends HTMLElement {
         if(this._subscribers.has(sender) && action === "unsubscribe") {
             e.stopPropagation();
             this._subscribers.delete(sender);
-            console.log(this.getAttribute("name"),"received", newState,"from", sender.getAttribute("name"));
             this.sendAction("update");
         } else
         if (e.detail.sender !== this && e.detail.sender instanceof ComponentTest) {
             e.stopPropagation();
             this._subscribers.set(sender, newState);
-            console.log(this.getAttribute("name"),"received", newState,"from", sender.getAttribute("name"));
             this.sendAction("update");
         }
     }
@@ -65,7 +60,6 @@ class ComponentTest extends HTMLElement {
 
     connectedCallback() {
         this._parent = this.parentElement;
-        console.log(this.getAttribute("name"),"is the child of", this._parent.getAttribute("name"));
         this.sendAction("update");  
     }
 
@@ -74,7 +68,6 @@ class ComponentTest extends HTMLElement {
     }
 
     disconnectedCallback() {
-        console.log(`${this._state.name} has been disconnected`);
         this.removeEventListener(NOTIFICATION_EVENT, this.handleEvent);
         this.sendAction("unsubscribe");
         this._subscribers.clear();
