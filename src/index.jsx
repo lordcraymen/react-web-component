@@ -9,8 +9,17 @@ import { XR } from '@react-three/xr';
 
 import { createTestWebComponent } from "./classes/ComponentTest";
 
-const TestComponent = createTestWebComponent({name:""})
-customElements.define("mc-test-component", TestComponent);
+
+const MainComponent = createTestWebComponent({},{onUpdate:({root,children, instanceID}) => { 
+    !root.shadowRoot && (root.attachShadow({ mode: "open" }),root.reactRoot = ReactDOM.createRoot(root.shadowRoot)); 
+    root.reactRoot.render(<ul key={instanceID}>{children}</ul>)
+}})
+
+
+customElements.define("mc-main-component", MainComponent);
+
+const ChildComponent = createTestWebComponent({name:""},{onUpdate:({name,instanceID,children}) => <li key={instanceID}>{name}{ children && <ul>{children}</ul> }</li>})
+customElements.define("mc-test-component", ChildComponent);
 
 
 const SceneComponent = createWebComponent(

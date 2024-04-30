@@ -16,7 +16,7 @@ class ComponentTest extends HTMLElement {
     protected _subscribers: Map<HTMLElement, unknown>;
     protected _instanceID: string;
     protected _handlers: { [handler: string]: Function };
-    private _state: { [propname: string]: unknown };
+    protected _state: { [propname: string]: unknown };
 
     static get observedAttributes() {
         return [];
@@ -54,7 +54,10 @@ class ComponentTest extends HTMLElement {
 
     private sendAction = (action) => {
         if (this._parent) {
-            sendUpdate(this._parent, { sender: this, action, newState: {...this._state, children: getOrderedChildrenState(this._subscribers)} } );
+            const orderedChildrenState = getOrderedChildrenState(this._subscribers);
+            const tempState = {...this._state, root:this, instanceID: this._instanceID, children: orderedChildrenState}
+            const newState = this._handlers.onUpdate?.(tempState) || tempState;
+            sendUpdate(this._parent, { sender: this, action, newState} );
         }
     }
 

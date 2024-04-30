@@ -5,18 +5,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Example</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    width:100vw;
-    height:100vh;
-  }
-  #test {
-    width: 100vw;
-    height: 100vh;
-  }
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #test {
+      width: 100vw;
+      height: 100vh;
+    }
   </style>
 </head>
 
@@ -32,14 +33,16 @@
     <mc-light type="ambient" intensity="2"></mc-model>
   </mc-scene>
   -->
-  <mc-test-component name="Guenther">
-    <mc-test-component name="Peter">
-      <mc-test-component name="Florian">
-        <mc-test-component name="Hans"></mc-test-component>
+  <mc-main-component>
+    <mc-test-component name="Guenther">
+      <mc-test-component name="Peter">
+        <mc-test-component name="Florian">
+          <mc-test-component name="Hans"></mc-test-component>
+        </mc-test-component>
       </mc-test-component>
     </mc-test-component>
-  </mc-test-component>
-  <script type="module" src="src/index.jsx" ></script>
+    </mc-test-component>
+    <script type="module" src="src/index.jsx"></script>
 </body>
 
 </html>
