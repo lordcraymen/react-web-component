@@ -39,28 +39,27 @@ class ComponentTest extends HTMLElement {
         
     }
 
+
     private handleEvent = (e) => {
-        if (e.target !== this && e.target instanceof ComponentTest) {
+        const { sender, action, newState } = e.detail;
+
+        if(this._subscribers.has(sender) && action === "unsubscribe") {
             e.stopPropagation();
-            const actions = {
-                'update': () => {
-                    this._subscribers.set(e.target, e.detail.newState);
-                    console.log(this.getAttribute("name"),"received", e.detail,"from", e.target.getAttribute("name"));
-                },
-                'unsubscribe': () => {
-                    this._subscribers.delete(e.target);
-                }
-            }
-            actions[e.detail.action]?.();
+            this._subscribers.delete(sender);
+            console.log(this.getAttribute("name"),"received", newState,"from", sender.getAttribute("name"));
+            this.sendAction("update");
+        } else
+        if (e.detail.sender !== this && e.detail.sender instanceof ComponentTest) {
+            e.stopPropagation();
+            this._subscribers.set(sender, newState);
+            console.log(this.getAttribute("name"),"received", newState,"from", sender.getAttribute("name"));
             this.sendAction("update");
         }
     }
 
     private sendAction = (action) => {
         if (this._parent) {
-            //const children = getOrderedChildrenState(this._subscribers);
-            //const newState = this._handlers.onUpdate?.({...this._state,children}) || {...this._state, children};
-            sendUpdate(this, { action, newState: {...this._state, children: {...this._subscribers.values()}} } );
+            sendUpdate(this._parent, { sender: this, action, newState: {...this._state, children: getOrderedChildrenState(this._subscribers)} } );
         }
     }
 
@@ -71,10 +70,7 @@ class ComponentTest extends HTMLElement {
     }
 
     attributeChangedCallback(name: string, oldValue:string, newValue: string) {
-        if (this._state[name] !== newValue) {
-            this._state[name] = newValue
-            this.sendAction("update");
-        }
+        this._state[name] !== newValue ? (this._state[name] = newValue, this.sendAction("update")) : null;
     }
 
     disconnectedCallback() {
