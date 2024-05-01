@@ -19,6 +19,24 @@
       height: 100vh;
     }
   </style>
+  <script>
+    // Globaler Fehlerhandler
+    window.onerror = function (message, source, lineno, colno, error) {
+        var errorElement = document.createElement('pre');
+        errorElement.textContent = [
+            'Message: ' + message,
+            'Source: ' + source,
+            'Line: ' + lineno,
+            'Column: ' + colno,
+            'Error object: ' + JSON.stringify(error)
+        ].join('\n');
+        document.body.appendChild(errorElement);
+        return false; // Falsch zurückgeben, um das Standard-Fehlerhandling zu verhindern
+    };
+
+    // Ihr Code...
+</script>
+<script src="node_modules/@ungap/custom-elements/es.js"></script>
 </head>
 
 <body>
@@ -27,18 +45,15 @@
     <mc-test-component name="Guenther">
       <mc-test-component name="Peter">
         <mc-test-component name="Florian">
-          <mc-test-component name="Hans"></mc-test-component>
+          <mc-test-component name="Kotaro">Kotaro</mc-test-component>
         </mc-test-component>
       </mc-test-component>
     </mc-test-component>
     </mc-test-component>
   </mc-main-component>
-
+<!--
   <mc-scene id="test">
-    <!--<mc-model src="src/assets/example.glb" scale="100,100,100" position="30,0,0"></mc-model>-->
-    <mc-box></mc-box>
-    <!--<mc-light type="ambient" intensity="2"></mc-light>-->
-  </mc-scene>
+  </mc-scene> -->
     <script type="module" src="src/index.jsx"></script>
 </body>
 
