@@ -2,17 +2,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei'
-import { Link } from '../Link';
-import { ViewPoint, ViewPointProvider } from '../ViewPoint/Viewpoint';
 
-const Box = ({position = [0,0,0] ,scale = 1, rotation = 1 }) => {
+const Box = ({ position = [0, 0, 0], scale = 1, rotation = 1 }) => {
   const ref = useRef(new THREE.Mesh());
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
   return (
     <mesh
       ref={ref}
-      {...{position,rotation,scale}}
+      {...{ position, rotation, scale }}
       onPointerOver={(event) => hover(true)}
       onPointerOut={(event) => hover(false)}
       onPointerDown={(event) => click(true)}
@@ -43,22 +41,15 @@ const Light = ({ type, position = [0, 0, 0], intensity = 1, angle = 0.15, penumb
 };
 
 
-const Scene = ({children}) => {
+const Scene = ({ children }) => {
 
   return (
-      <Canvas>
-        <OrbitControls
-          enableZoom={true}
-          enablePan={true}
-          enableRotate={true}
-          zoomSpeed={2}
-          panSpeed={0.5}
-          rotateSpeed={0.5}
-        /> 
-        <Box position={[0, 0, 0]} />
-        {children} 
-      </Canvas>
-   
+    <Canvas>
+      <ambientLight args={[0xff0000]} intensity={0.1} />
+      <directionalLight position={[0, 0, 5]} intensity={0.5} />
+      <OrbitControls />
+      <Box position={[0, 0, 0]} />
+    </Canvas>
   );
 };
 /*
