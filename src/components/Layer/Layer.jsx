@@ -4,7 +4,7 @@ import { useThree } from '@react-three/fiber';
 let LayerCounter = 0;
 
 const Layer = ({ children, visible = true, opacity=1 }) => {
-  
+  /*
   const { camera } = useThree();
   const layernumber = useRef(LayerCounter++).current;
 
@@ -21,8 +21,9 @@ const Layer = ({ children, visible = true, opacity=1 }) => {
       camera.layers.disable(layernumber);
     };
   }, [camera, visible, layernumber]);
+  */
 
-  return visible ? <group layers={layernumber}>{children}</group> : null;
+  return visible ? {children} : null;
 };
 
 export { Layer };

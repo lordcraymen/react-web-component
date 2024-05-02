@@ -37,16 +37,16 @@ const BoxComponent = createTestWebComponent(
     {
         "position":[0,0,0],
         "rotation":[0,0,0],
-        "scale":[1,1,1]
+        "scale":1
     },
     {
         onUpdate: ({instanceID,position,rotation,scale}) => {
-            console.log(instanceID,position.split(",").map(Number))
+            console.log(instanceID,scale)
         return <Box 
                         key={instanceID} 
-                        position={position.split(",").map(Number)} 
-                        //rotation={String(rotation).split(",")}
-                        //scale={String(scale).split(",")}
+                        position={Object.assign([0, 0, 0], String(position).split(",").map(Number))} 
+                        {...{rotation: rotation ? String(rotation).split(",").map(Number) : [0, 0, 0]}}
+                        scale={Number(scale) || 1}
                     />}
     })
 customElements.define("mc-box", BoxComponent);
@@ -114,10 +114,9 @@ const LayerComponent = createTestWebComponent(
         "visible": true,
         "layernumber": 0  },
     {
-        onUpdate: ({ instanceID, children, opacity, visible }) => {
-            return (
-                visible ? <Layer key={instanceID} opacity={opacity}>{children}</Layer> : null
-            );
+        onUpdate: ({ instanceID, children=[], opacity, visible }) => {
+            console.log("layer", instanceID, visible, children);
+            return <Layer visible={true} key={instanceID} opacity={1}></Layer>
         }
     }
 );
