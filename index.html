@@ -53,8 +53,11 @@
   </mc-main-component>-->
 
   <mc-scene>
-    <mc-box position="-1.2,0,0" scale="2"></mc-box>
-    <mc-box position="1.2,0,0" scale="2"></mc-box>
+    <mc-group position="0,0,0" scale="1">
+      <mc-box position="0,0,0" scale="1"></mc-box>
+      <mc-box position="-1.2,0,0" scale="2"></mc-box>
+      <mc-box position="1.2,0,0" scale="2"></mc-box>
+    </mc-group>
   </mc-scene>
     <script type="module" src="src/index.jsx"></script>
 </body>
