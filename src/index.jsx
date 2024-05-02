@@ -1,7 +1,7 @@
 import ReactDOM from "react-dom/client";
 import React from "react";
 import { HostContext } from "./components/useHostContext/useHostContext";
-import { Scene, Box, Light } from "./components/Scene";
+import { Scene, Box, Light, Group } from "./components/Scene";
 import { Model } from "./components/Model";
 import { Layer } from "./components/Layer";
 import { XR } from '@react-three/xr';
@@ -28,8 +28,9 @@ const SceneComponent = createTestWebComponent(
     },
     {
         onUpdate: ({ root, children, instanceID }) => {
+            console.log("scene updated",children)
             !root.shadowRoot && (root.attachShadow({ mode: "open" }), root.reactRoot = ReactDOM.createRoot(root.shadowRoot));
-            root.reactRoot.render(<Scene key={instanceID}>{children}</Scene>)
+            root.reactRoot.render(<Scene>{...children}</Scene>)
         }
     })
 customElements.define("mc-scene", SceneComponent);
@@ -133,9 +134,9 @@ const GroupComponent = createTestWebComponent(
         "scale": 1
     },
     {
-        onUpdate: ({ instanceID, children, position,rotation,scale }) => {
+        onUpdate: ({ instanceID, children, position }) => {
             console.log("group", instanceID, children);
-            return [...children]
+            return <Group key={instanceID} position={Object.assign([0, 0, 0], String(position).split(",").map(Number))}>{children}</Group>
         }
     }
 );

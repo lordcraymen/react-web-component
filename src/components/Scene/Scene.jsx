@@ -45,4 +45,12 @@ const Scene = ({children}) => {
   );
 };
 
-export { Scene, Box, Light };
+const Group = ({ children, position }) => {
+  return (
+    <group position={position}>
+      {children}
+    </group>
+  );
+};
+
+export { Scene, Box, Light, Group };
