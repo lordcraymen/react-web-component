@@ -18,7 +18,9 @@ const Box = ({  ...props }) => {
       onPointerOut={(event) => hover(false)}
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={'orange'} />
+      <meshStandardMaterial color={'orange'} />{
+        props.children
+      }
     </mesh>
   );
 };
@@ -39,18 +41,16 @@ const Scene = ({children}) => {
         enableRotate
         enableZoom
       />
+      <Group position={[2,0,0]}>
         {children}
-      {/* More Boxes as needed */}
+        </Group>
     </Canvas>
   );
 };
 
-const Group = ({ children, position }) => {
-  return (
+const Group = ({ children, position }) => 
     <group position={position}>
       {children}
     </group>
-  );
-};
 
 export { Scene, Box, Light, Group };

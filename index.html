@@ -22,25 +22,26 @@
   <script>
     // Globaler Fehlerhandler
     window.onerror = function (message, source, lineno, colno, error) {
-        var errorElement = document.createElement('pre');
-        errorElement.textContent = [
-            'Message: ' + message,
-            'Source: ' + source,
-            'Line: ' + lineno,
-            'Column: ' + colno,
-            'Error object: ' + JSON.stringify(error)
-        ].join('\n');
-        document.body.appendChild(errorElement);
-        return false; // Falsch zurückgeben, um das Standard-Fehlerhandling zu verhindern
+      var errorElement = document.createElement('pre');
+      errorElement.textContent = [
+        'Message: ' + message,
+        'Source: ' + source,
+        'Line: ' + lineno,
+        'Column: ' + colno,
+        'Error object: ' + JSON.stringify(error)
+      ].join('\n');
+      document.body.appendChild(errorElement);
+      return false; // Falsch zurückgeben, um das Standard-Fehlerhandling zu verhindern
     };
 
     // Ihr Code...
-</script>
-<script src="node_modules/@ungap/custom-elements/es.js"></script>
+  </script>
+  <script src="node_modules/@ungap/custom-elements/es.js"></script>
+  <script type="module" src="src/index.jsx"></script>
 </head>
 
 <body>
-  
+  <!--
   <mc-main-component>
     <mc-test-component name="Guenther">
       <mc-test-component name="Peter">
@@ -51,15 +52,16 @@
     </mc-test-component>
     </mc-test-component>
   </mc-main-component>
+  -->
 
   <mc-scene>
-    <mc-group position="0,0,0" scale="1">
-      <mc-box position="0,0,0" scale="1"></mc-box>
-      <mc-box position="-1.2,0,0" scale="2"></mc-box>
-      <mc-box position="1.2,0,0" scale="2"></mc-box>
-    </mc-group>
+    <mc-box position="2,0,0" scale="1">
+      <mc-group position="0,0,0" scale="1">
+            <mc-box position="2,0,0" scale="1"></mc-box>
+      </mc-group>
+    </mc-box>
   </mc-scene>
-    <script type="module" src="src/index.jsx"></script>
+  
 </body>
 
 </html>

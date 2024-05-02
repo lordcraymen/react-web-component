@@ -43,17 +43,16 @@ const BoxComponent = createTestWebComponent(
         "scale": 1
     },
     {
-        onUpdate: ({ instanceID, position, rotation, scale }) => {
-            console.log(instanceID, scale)
+        onUpdate: ({ instanceID, position, rotation, scale, children }) => {
             return <Box
                 key={instanceID}
                 position={Object.assign([0, 0, 0], String(position).split(",").map(Number))}
                 {...{ rotation: rotation ? String(rotation).split(",").map(Number) : [0, 0, 0] }}
                 scale={Number(scale) || 1}
-            />
+            >{children}</Box>
         }
     })
-customElements.define("mc-box", BoxComponent);
+
 
 const ModelComponent = createTestWebComponent(
     {
@@ -134,11 +133,19 @@ const GroupComponent = createTestWebComponent(
         "scale": 1
     },
     {
-        onUpdate: ({ instanceID, children, position }) => {
-            console.log("group", instanceID, children);
-            return <Group key={instanceID} position={Object.assign([0, 0, 0], String(position).split(",").map(Number))}>{children}</Group>
+        onUpdate: ({ instanceID, position, rotation, scale, children }) => {
+            return <Group
+                key={instanceID}
+                position={Object.assign([0, 0, 0], String(position).split(",").map(Number))}
+                {...{ rotation: rotation ? String(rotation).split(",").map(Number) : [0, 0, 0] }}
+                scale={Number(scale) || 1}
+            >{children}</Group>
         }
-    }
-);
+    })
 
-customElements.define("mc-group", GroupComponent);
+    customElements.define("mc-group", GroupComponent);
+    customElements.define("mc-box", BoxComponent);
+    
+   
+
+  

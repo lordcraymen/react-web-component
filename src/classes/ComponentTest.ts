@@ -33,19 +33,21 @@ class ComponentTest extends HTMLElement {
 
         this._state = {};
         this._subscribers = new Map();
-        this.addEventListener(NOTIFICATION_EVENT, this.handleEvent);
+        
     }
 
 
     private handleEvent = (e) => {
         const { sender, action, newState } = e.detail;
 
+        console.log(sender,sender instanceof ComponentTest)
+
         if(this._subscribers.has(sender) && action === "unsubscribe") {
             e.stopPropagation();
             this._subscribers.delete(sender);
             this.sendAction("update");
         } else
-        if (e.detail.sender !== this && e.detail.sender instanceof ComponentTest) {
+        if (sender !== this && sender instanceof ComponentTest) {
             e.stopPropagation();
             this._subscribers.set(sender, newState);
             this.sendAction("update");
@@ -62,6 +64,7 @@ class ComponentTest extends HTMLElement {
     }
 
     connectedCallback() {
+        this.addEventListener(NOTIFICATION_EVENT, this.handleEvent);
         this._parent = this.parentElement;
         this.sendAction("update");  
     }
