@@ -27,7 +27,7 @@ const SceneComponent = createTestWebComponent(
     { 
         onUpdate: ({root,children,instanceID}) => {
             !root.shadowRoot && (root.attachShadow({ mode: "open" }),root.reactRoot = ReactDOM.createRoot(root.shadowRoot));
-            root.reactRoot.render(<Scene>{children}</Scene>)
+            root.reactRoot.render(<Scene key={instanceID}>{children}</Scene>)
         } 
     })
 customElements.define("mc-scene", SceneComponent);
@@ -40,14 +40,14 @@ const BoxComponent = createTestWebComponent(
         "scale":[1,1,1]
     },
     {
-        onUpdate: ({instanceID,position,rotation,scale}) => 
-        {
-            return <Box key={instanceID} 
-                        position={String(position).split(",").map(Number)} 
-                        rotation={String(rotation).split(",").map(Number)}
-                        scale={String(scale).split(",").map(Number)}
-                    />
-        }
+        onUpdate: ({instanceID,position,rotation,scale}) => {
+            console.log(instanceID,position.split(",").map(Number))
+        return <Box 
+                        key={instanceID} 
+                        position={position.split(",").map(Number)} 
+                        //rotation={String(rotation).split(",")}
+                        //scale={String(scale).split(",")}
+                    />}
     })
 customElements.define("mc-box", BoxComponent);
 

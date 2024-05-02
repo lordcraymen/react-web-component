@@ -1,77 +1,49 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
 import { OrbitControls } from '@react-three/drei'
 
-const Box = ({ position = [0, 0, 0], scale = 1, rotation = 1 }) => {
-  const ref = useRef(new THREE.Mesh());
+const Box = ({ isFocused, ...props }) => {
+  const ref = useRef();
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
+
+  useFrame((state, delta) => (ref.current.rotation.x += delta));
+
   return (
     <mesh
+      {...props}
       ref={ref}
-      {...{ position, rotation, scale }}
+      scale={clicked ? 1.5 : isFocused || hovered ? 1.25 : 1} // Adjust for focus
+      onClick={(event) => click(!clicked)}
       onPointerOver={(event) => hover(true)}
       onPointerOut={(event) => hover(false)}
-      onPointerDown={(event) => click(true)}
-      onPointerUp={(event) => click(false)}
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={clicked || hovered ? 'hotpink' : 'orange'} />
+      <meshStandardMaterial color={isFocused || hovered ? 'hotpink' : 'orange'} />
     </mesh>
   );
 };
 
-const Light = ({ type, position = [0, 0, 0], intensity = 1, angle = 0.15, penumbra = 1, decay = 0 }) => {
-  let light;
-  switch (type) {
-    case 'ambient':
-      light = <ambientLight intensity={intensity} />;
-      break;
-    case 'spot':
-      light = <spotLight position={position} angle={angle} penumbra={penumbra} decay={decay} intensity={intensity} />;
-      break;
-    case 'point':
-      light = <pointLight position={position} decay={decay} intensity={intensity} />;
-      break;
-    default:
-      light = null;
-  }
-  return light;
-};
+const Light = () => <ambientLight intensity={Math.PI / 2} />
 
-
-const Scene = ({ children }) => {
+const Scene = ({children}) => {
+  const [focusedBox, setFocusedBox] = useState(null); // Track which box is focused
 
   return (
     <Canvas>
-      <ambientLight args={[0xff0000]} intensity={0.1} />
-      <directionalLight position={[0, 0, 5]} intensity={0.5} />
-      <OrbitControls />
-      <Box position={[0, 0, 0]} />
+      <ambientLight intensity={Math.PI / 2} />
+      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
+      <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
+      <OrbitControls
+        enableDamping
+        enablePan
+        enableRotate
+        enableZoom
+      />
+        {children}
+      {/* More Boxes as needed */}
     </Canvas>
   );
 };
-/*
-<ViewPointProvider>
-        <ViewPoint position={[0, 5, 10]}>
-          {({setActive}) => <Link
-            href="#Box1"
-            alt="Box number 1"
-            onFocus={setActive}
-            onClick={setActive}
-          >{({focus}) => <Box position={[-1.2, 0, 0]} isFocused={focus} />}
-          </Link>}
-        </ViewPoint>
-        <ViewPoint position={[0, 5, -10]}>
-          {({setActive}) => <Link
-            href="#Box1"
-            alt="Box number 1"
-            onFocus={setActive}
-            onClick={setActive}
-          >{({focus}) => <Box position={[1.2, 0, 0]} isFocused={focus} />}
-          </Link>}
-        </ViewPoint>
-        </ViewPointProvider>
-*/
+
 export { Scene, Box, Light };
