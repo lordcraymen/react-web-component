@@ -14,10 +14,8 @@ const defineCustomElement = (tagName, component) => {
     customElements.define(tagName, component);
 }
 document.addEventListener("DOMContentLoaded", () =>
-    Array.from(componentStore).reverse().forEach(([key, value]) => value.parent.insertBefore(key, value.sibling))
+   Array.from(componentStore).reverse().forEach(([key, value]) => value.parent.insertBefore(key, value.sibling))
 );
-
-document.addEventListener("DOMContentLoaded", () => { console.log(componentStore); componentStore.forEach((value, key) => value.parent.insertBefore(key, value.sibling)) })
 
 
 const MainComponent = createTestWebComponent({}, {

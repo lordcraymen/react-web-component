@@ -1,31 +1,34 @@
-import { useEffect, useRef } from 'react';
-import { useThree } from '@react-three/fiber';
+import { useMemo } from 'react';
+import { useThree, createPortal, useFrame } from '@react-three/fiber';
+import { Scene, WebGL3DRenderTarget, AmbientLight } from 'three';
+import { ScreenSpace, useFBO } from '@react-three/drei';
 
-let LayerCounter = 0;
 
-const Layer = ({ children, visible, opacity=1 }) => {
-  /*
-  const { camera } = useThree();
-  const layernumber = useRef(LayerCounter++).current;
+const Layer = ({ children }) => {
 
-  console.log("layer", layernumber, visible);
-  useEffect(() => {
-    if (visible) {
-      console.log("enable layer", layernumber);
-      camera.layers.enable(layernumber);
-    } else {
-      console.log("disable layer", layernumber);
-      camera.layers.disable(layernumber);
-    }
-    return () => {
-      camera.layers.disable(layernumber);
-    };
-  }, [camera, visible, layernumber]);
-  */
+  const { scene: baseScene, size } = useThree()
 
-  console.log(visible)
+  const [scene] = useMemo(() => {
+    const scene = new Scene()
+    scene.add(new AmbientLight(0xffffff, 0.5))
+    return [scene]
+  }, [baseScene])
 
-  return visible ? children : null;
-};
+  const target = useFBO({ stencilBuffer: true })
+
+  useFrame((state) => {
+    state.gl.setRenderTarget(target)
+    state.gl.render(scene, state.camera)
+    state.gl.setRenderTarget(null)
+  })
+
+  return <>{createPortal(children, scene)}
+      <mesh>
+        <boxGeometry args={[2, 2, 2]}>
+            <meshStandardMaterial color={'orange'} />
+        </boxGeometry>
+      </mesh>
+  </>
+}
 
 export { Layer };
