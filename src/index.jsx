@@ -8,6 +8,17 @@ import { XR } from '@react-three/xr';
 
 import { createTestWebComponent } from "./classes/ComponentTest";
 
+const componentStore = new Map()
+const defineCustomElement = (tagName, component) => {
+    Array.from(document.getElementsByTagName(tagName)).forEach(el => { componentStore.set(el, { parent: el.parentElement, sibling: el.nextSibling }); el.remove() });
+    customElements.define(tagName, component);
+}
+document.addEventListener("DOMContentLoaded", () =>
+    Array.from(componentStore).reverse().forEach(([key, value]) => value.parent.insertBefore(key, value.sibling))
+);
+
+document.addEventListener("DOMContentLoaded", () => { console.log(componentStore); componentStore.forEach((value, key) => value.parent.insertBefore(key, value.sibling)) })
+
 
 const MainComponent = createTestWebComponent({}, {
     onUpdate: ({ root, children, instanceID }) => {
@@ -15,12 +26,10 @@ const MainComponent = createTestWebComponent({}, {
         root.reactRoot.render(<ul key={instanceID}>{children}</ul>)
     }
 })
-
-
-customElements.define("mc-main-component", MainComponent);
+defineCustomElement("mc-main-component", MainComponent);
 
 const ChildComponent = createTestWebComponent({ name: "" }, { onUpdate: ({ name, instanceID, children }) => <li key={instanceID}>{name}{children && <ul>{children}</ul>}</li> })
-customElements.define("mc-test-component", ChildComponent);
+defineCustomElement("mc-test-component", ChildComponent);
 
 
 const SceneComponent = createTestWebComponent(
@@ -28,12 +37,11 @@ const SceneComponent = createTestWebComponent(
     },
     {
         onUpdate: ({ root, children, instanceID }) => {
-            console.log("scene updated",children)
             !root.shadowRoot && (root.attachShadow({ mode: "open" }), root.reactRoot = ReactDOM.createRoot(root.shadowRoot));
-            root.reactRoot.render(<Scene>{...children}</Scene>)
+            root.reactRoot.render(<Scene {...{key:instanceID, children}} />)
         }
     })
-customElements.define("mc-scene", SceneComponent);
+defineCustomElement("mc-scene", SceneComponent);
 
 
 const BoxComponent = createTestWebComponent(
@@ -72,7 +80,7 @@ const ModelComponent = createTestWebComponent(
             >{children}</Model> : null
         }
     })
-customElements.define("mc-model", ModelComponent);
+defineCustomElement("mc-model", ModelComponent);
 
 const LightComponent = createTestWebComponent(
     {
@@ -95,36 +103,30 @@ const LightComponent = createTestWebComponent(
         }
     }
 );
-customElements.define("mc-light", LightComponent);
+defineCustomElement("mc-light", LightComponent);
 
 const XRComponent = createTestWebComponent(
     {
     },
     {
-        onUpdate: ({ instanceID, children }) => {
-            return (
-                <XR key={instanceID}>{children}</XR>
-            );
-        }
+        onUpdate: ({ instanceID, children }) => <XR {...{ key: instanceID, children }} />
     }
 );
-customElements.define("mc-xr", XRComponent);
+
+
+defineCustomElement("mc-xr", XRComponent);
 
 const LayerComponent = createTestWebComponent(
     {
         "opacity": 1,
         "visible": true,
-        "layernumber": 0
     },
     {
-        onUpdate: ({ instanceID, children = [], opacity, visible }) => {
-            console.log("layer", instanceID, visible, children);
-            return <Layer visible={true} key={instanceID} opacity={1}></Layer>
-        }
+        onUpdate: ({ instanceID, children, opacity, visible }) => <Layer {...{ key: instanceID, children, opacity, visible: !(visible === "false") }} />
     }
 );
 
-customElements.define("mc-layer", LayerComponent);
+defineCustomElement("mc-layer", LayerComponent);
 
 const GroupComponent = createTestWebComponent(
     {
@@ -143,9 +145,8 @@ const GroupComponent = createTestWebComponent(
         }
     })
 
-    customElements.define("mc-group", GroupComponent);
-    customElements.define("mc-box", BoxComponent);
-    
-   
 
-  
+defineCustomElement("mc-box", BoxComponent);
+defineCustomElement("mc-group", GroupComponent);
+
+

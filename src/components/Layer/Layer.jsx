@@ -3,7 +3,7 @@ import { useThree } from '@react-three/fiber';
 
 let LayerCounter = 0;
 
-const Layer = ({ children, visible = true, opacity=1 }) => {
+const Layer = ({ children, visible, opacity=1 }) => {
   /*
   const { camera } = useThree();
   const layernumber = useRef(LayerCounter++).current;
@@ -23,7 +23,9 @@ const Layer = ({ children, visible = true, opacity=1 }) => {
   }, [camera, visible, layernumber]);
   */
 
-  return visible ? {children} : null;
+  console.log(visible)
+
+  return visible ? children : null;
 };
 
 export { Layer };

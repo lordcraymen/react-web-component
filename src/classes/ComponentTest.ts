@@ -40,8 +40,6 @@ class ComponentTest extends HTMLElement {
     private handleEvent = (e) => {
         const { sender, action, newState } = e.detail;
 
-        console.log(sender,sender instanceof ComponentTest)
-
         if(this._subscribers.has(sender) && action === "unsubscribe") {
             e.stopPropagation();
             this._subscribers.delete(sender);

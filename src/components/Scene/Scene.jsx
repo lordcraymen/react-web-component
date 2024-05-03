@@ -48,9 +48,7 @@ const Scene = ({children}) => {
   );
 };
 
-const Group = ({ children, position }) => 
-    <group position={position}>
-      {children}
-    </group>
+const Group = ({ children, position, scale, rotation }) => 
+    <group {...{children,position,scale,rotation}} />
 
 export { Scene, Box, Light, Group };
