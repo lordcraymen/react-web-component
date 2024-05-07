@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useThree, createPortal, useFrame } from '@react-three/fiber';
-import { Scene, AmbientLight } from 'three';
+import { Scene, AmbientLight, NormalBlending } from 'three';
 
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
@@ -37,24 +37,20 @@ const Layer = ({ children }) => {
   const composer = useRef(new EffectComposer(gl))
   const basePass = useRef(new RenderPass(scene, camera));
   const pass = useRef(new RenderPass(layerContainer.current, camera));
-
-  pass.current.clear = false;
   pass.current.clearDepth = true;
-  
+
+  baseComposer.current.addPass(basePass.current);  // Moved this line up
   composer.current.addPass(pass.current);
+  
   const alphaPass = new ShaderPass(alphaShader);
   composer.current.addPass(alphaPass);
-
-
-  baseComposer.current.addPass(basePass.current);
-
-
-  
   
   useFrame(({ gl }) => {
-    //gl.autoClear = false;
+    
     baseComposer.current.render();
     composer.current.render();
+    
+    
   },1);
 
 
