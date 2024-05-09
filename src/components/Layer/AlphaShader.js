@@ -14,9 +14,10 @@ const AlphaShader = {
       varying vec2 vUv;
       void main() {
         vec4 color = texture2D(tDiffuse, vUv);
-        gl_FragColor = vec4(color.rgb, color.a * 0.5);
+        vec4 overlayColor = vec4(color.rgb, 1);
+        gl_FragColor = mix(color, overlayColor, overlayColor.a);
       }
     `,
-  };
+    }
 
-  export { AlphaShader };
+    export { AlphaShader }
