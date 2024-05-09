@@ -13,13 +13,13 @@ const Layer = ({ children }) => {
 
   const renderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight);
 
-
   const firstComposer = useRef(new EffectComposer(gl));
   firstComposer.current.setSize(size.width, size.height);
 
   const firstPass = useRef(new RenderPass(scene, camera));
   const secondPass = useRef(new RenderPass(layerContainer.current, camera));
   secondPass.current.clear = false;
+  secondPass.current.clearDepth = true;
   secondPass.current.renderToScreen = false;
 
   const finalPass = useRef(new ShaderPass(AlphaShader))
@@ -28,6 +28,7 @@ const Layer = ({ children }) => {
   firstComposer.current.addPass(firstPass.current);
   firstComposer.current.addPass(secondPass.current);
   firstComposer.current.addPass(finalPass.current);
+
 
   useFrame(({ gl }) => {
     gl.autoClear = false;
