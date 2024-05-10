@@ -37,12 +37,14 @@ const Layer = ({ children, opacity = 1 }) => {
   const _opacity = parseFloat(String(opacity))
   gl.autoClear = true;
 
-  useFrame(({ gl, scene, camera }) => { 
-    secondComposer.current.render();
-    finalPass.current.material.uniforms.tPassColor.value = secondComposer.current.readBuffer.texture;
+  finalPass.current.material.uniforms.tPassColor.value = secondComposer.current.readBuffer.texture;
     finalPass.current.material.uniforms.tPassDepth.value = secondComposer.current.readBuffer.depthTexture;
     finalPass.current.material.uniforms.tDepth.value = firstComposer.current.readBuffer.depthTexture;
     finalPass.current.material.uniforms.opacity.value = _opacity;
+
+  useFrame(({ gl, scene, camera }) => { 
+    secondComposer.current.render();
+    
     firstComposer.current.render();
 },1);
 
