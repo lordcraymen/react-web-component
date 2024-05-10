@@ -22,29 +22,22 @@ const Layer = ({ children, opacity = 1 }) => {
   const firstPass = useRef(new RenderPass(scene, camera));
   const secondPass = useRef(new RenderPass(layerContainer.current, camera));
   secondComposer.current.readBuffer.depthTexture = secondDepthTexture.current;
-  //secondComposer.current.addPass(secondPass.current);
   secondComposer.current.renderToScreen = false;
 
   firstComposer.current.readBuffer.depthTexture = firstDepthTexture.current;
-  //firstComposer.current.addPass(firstPass.current);
   firstPass.current.clearDepth = false;
 
   const finalPass = useRef(new ShaderPass(AlphaShader))
   finalPass.current.renderToScreen = true;
-  
-  //firstComposer.current.addPass(finalPass.current);
 
   const _opacity = parseFloat(String(opacity))
   gl.autoClear = true;
 
-  finalPass.current.material.uniforms.tPassColor.value = secondComposer.current.readBuffer.texture;
-    finalPass.current.material.uniforms.tPassDepth.value = secondComposer.current.readBuffer.depthTexture;
-    finalPass.current.material.uniforms.tDepth.value = firstComposer.current.readBuffer.depthTexture;
-    finalPass.current.material.uniforms.opacity.value = _opacity;
+  finalPass.current.material.uniforms.opacity.value = _opacity;
 
-  useFrame(({ gl, scene, camera }) => { 
+
+  useFrame(() => { 
     secondComposer.current.render();
-    
     firstComposer.current.render();
 },1);
 
@@ -53,6 +46,11 @@ const Layer = ({ children, opacity = 1 }) => {
     secondComposer.current.addPass(secondPass.current);
     firstComposer.current.addPass(firstPass.current);
     firstComposer.current.addPass(finalPass.current);
+
+    finalPass.current.material.uniforms.tPassColor.value = secondComposer.current.readBuffer.texture;
+    finalPass.current.material.uniforms.tPassDepth.value = secondComposer.current.readBuffer.depthTexture;
+    
+    finalPass.current.material.uniforms.tDepth.value = firstComposer.current.readBuffer.depthTexture;
     return () => {
       secondComposer.current.removePass(secondPass.current);
       firstComposer.current.removePass(firstPass.current);
@@ -62,7 +60,7 @@ const Layer = ({ children, opacity = 1 }) => {
       firstDepthTexture.current.dispose();
       secondDepthTexture.current.dispose();
     };
-}, []); // Empty dependency array ensures this runs once
+}, []);
 
 
   return (
