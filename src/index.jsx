@@ -116,7 +116,7 @@ defineCustomElement("mc-xr", XRComponent);
 
 const LayerComponent = createTestWebComponent(
     {
-        "opacity": 1,
+        "opacity": 1.0,
         "visible": true,
     },
     {
