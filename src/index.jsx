@@ -26,7 +26,14 @@ const MainComponent = createTestWebComponent({}, {
 })
 defineCustomElement("mc-main-component", MainComponent);
 
-const ChildComponent = createTestWebComponent({ name: "" }, { onUpdate: ({ name, instanceID, children }) => <li key={instanceID}>{name}{children && <ul>{children}</ul>}</li> })
+const ChildComponent = createTestWebComponent({ }, { 
+    onUpdate: ({ root, instanceID, children }) => {
+        !root.listener && (
+            root.tabIndex = 0,
+            root.attachShadow({ mode: "open" }),
+            root.listener = root.addEventListener('focus', () => alert("fokus!")));
+        return <></>
+    } })
 defineCustomElement("mc-test-component", ChildComponent);
 
 
@@ -35,7 +42,7 @@ const SceneComponent = createTestWebComponent(
     },
     {
         onUpdate: ({ root, children, instanceID }) => {
-            !root.shadowRoot && (root.attachShadow({ mode: "open" }), root.reactRoot = ReactDOM.createRoot(root.shadowRoot));
+            !root.shadowRoot && (root.attachShadow({ mode: "open" }), root.reactRoot = ReactDOM.createRoot(root.shadowRoot),root.shadowRoot.delegateFocus = true, root.tabIndex = 0);
             root.reactRoot.render(<Scene {...{key:instanceID, children}} />)
         }
     })
