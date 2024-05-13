@@ -65,7 +65,7 @@ class ComponentTest extends HTMLElement {
 
         this._state = {};
         this._subscribers = new Map();
-        console.log(getFocusableChildren(this))
+        this._handlers.onInit?.(this);
     }
 
 
@@ -98,7 +98,7 @@ class ComponentTest extends HTMLElement {
         this.addEventListener(NOTIFICATION_EVENT, this.handleEvent);
         this._parent = this.parentElement;
         this.sendAction("update");
-    }
+        this.focus();    }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         this._state[name] !== newValue ? (this._state[name] = newValue, this.sendAction("update")) : null;

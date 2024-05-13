@@ -27,14 +27,13 @@ const MainComponent = createTestWebComponent({}, {
 defineCustomElement("mc-main-component", MainComponent);
 
 const ChildComponent = createTestWebComponent({ }, { 
-    onUpdate: ({ root, instanceID, children }) => {
-        root.addEventListener('focus', () => alert("fokus!"));
-        !root.listener && (
-            root.tabIndex = 0,
-            root.attachShadow({ mode: "open" })
-            );
-        return <></>
-    } })
+    onInit: (root) => { 
+        //root.focus = HTMLElement.prototype.focus
+        //root.attachShadow({ mode: "open" })
+        //root.tabIndex = 0
+        root.addEventListener('focus', (e) => console.log(e));
+      },
+    onUpdate: () => <></> })
 defineCustomElement("mc-test-component", ChildComponent);
 
 
@@ -42,8 +41,14 @@ const SceneComponent = createTestWebComponent(
     {
     },
     {
+        onInit: (root) => { 
+            const container = document.createElement("div");
+            const shadow = document.body.attachShadow({ mode: "open" });
+            root.reactRoot = ReactDOM.createRoot(shadow);
+            document.body.appendChild(container); 
+            
+         },
         onUpdate: ({ root, children, instanceID }) => {
-            !root.shadowRoot && (root.attachShadow({ mode: "open" }), root.reactRoot = ReactDOM.createRoot(root.shadowRoot),root.delegatesFocus = true);
             root.reactRoot.render(<Scene {...{key:instanceID, children}} />)
         }
     })
