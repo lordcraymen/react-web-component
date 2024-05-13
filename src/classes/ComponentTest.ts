@@ -31,7 +31,7 @@ const focusNextElement = (currentElement, focusableElements)  => {
 }
 
 let currentFocussedElement = null;
-
+/*
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Tab' ) { // Example: Use right arrow key to move focus
         const focusableChildren = getFocusableChildren(document.body);
@@ -39,6 +39,7 @@ document.addEventListener('keydown', function(event) {
         focusNextElement(activeElement, focusableChildren);
     }
 });
+*/
 
 
 
@@ -98,7 +99,7 @@ class ComponentTest extends HTMLElement {
         this.addEventListener(NOTIFICATION_EVENT, this.handleEvent);
         this._parent = this.parentElement;
         this.sendAction("update");
-        this.focus();    }
+    }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         this._state[name] !== newValue ? (this._state[name] = newValue, this.sendAction("update")) : null;

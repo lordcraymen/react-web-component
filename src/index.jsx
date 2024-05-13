@@ -28,10 +28,9 @@ defineCustomElement("mc-main-component", MainComponent);
 
 const ChildComponent = createTestWebComponent({ }, { 
     onInit: (root) => { 
-        //root.focus = HTMLElement.prototype.focus
-        //root.attachShadow({ mode: "open" })
-        //root.tabIndex = 0
+        root.tabIndex = 0
         root.addEventListener('focus', (e) => console.log(e));
+        root.addEventListener('blur', (e) => console.log("blur", e));
       },
     onUpdate: () => <></> })
 defineCustomElement("mc-test-component", ChildComponent);
@@ -43,9 +42,11 @@ const SceneComponent = createTestWebComponent(
     {
         onInit: (root) => { 
             const container = document.createElement("div");
-            const shadow = document.body.attachShadow({ mode: "open" });
+            container.style.width = "100%";
+            container.style.height = "100%";
+            const shadow = container.attachShadow({ mode: "open" });
             root.reactRoot = ReactDOM.createRoot(shadow);
-            document.body.appendChild(container); 
+            root.appendChild(container); 
             
          },
         onUpdate: ({ root, children, instanceID }) => {
@@ -81,7 +82,7 @@ const ModelComponent = createTestWebComponent(
         "scale": "[1,1,1]"
     },
     {
-        onMount: (host) => { host.tabIndex = 0; host.addEventListener('focus', () => alert("fokus!")) },
+        onInit: (host) => { host.tabIndex = 0; host.addEventListener('focus', () => alert("fokus!")) },
         onUpdate: ({ instanceID, src, position, rotation, scale, children }) => {
             return src ? <Model key={"model_" + instanceID}
                 src={src}
