@@ -27,11 +27,6 @@ const MainComponent = createTestWebComponent({}, {
 defineCustomElement("mc-main-component", MainComponent);
 
 const ChildComponent = createTestWebComponent({ }, { 
-    onInit: (root) => { 
-        root.tabIndex = 0
-        root.addEventListener('focus', (e) => console.log(e));
-        root.addEventListener('blur', (e) => console.log("blur", e));
-      },
     onUpdate: () => <></> })
 defineCustomElement("mc-test-component", ChildComponent);
 
@@ -60,11 +55,18 @@ const BoxComponent = createTestWebComponent(
     {
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
-        "scale": 1
-    },
+        "scale": 1,
+        "focus": false 
+       },
     {
-        onUpdate: ({ instanceID, position, rotation, scale, children }) => {
+        onInit: (host) => { 
+            host.addEventListener('focus', () => { host.setAttribute("focus", "true")  })
+            host.addEventListener('blur', () => { host.setAttribute("focus", "false")  })
+        },
+        onUpdate: ({ instanceID, position, rotation, scale, children, focus }) => {
+            console.log(focus)
             return <Box
+                focus={focus === "true"}
                 key={instanceID}
                 position={Object.assign([0, 0, 0], String(position).split(",").map(Number))}
                 {...{ rotation: rotation ? String(rotation).split(",").map(Number) : [0, 0, 0] }}

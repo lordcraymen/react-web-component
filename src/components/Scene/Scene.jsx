@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei'
 
-const Box = ({  ...props }) => {
+const Box = ({focus, ...props }) => {
   const ref = useRef();
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
@@ -18,7 +18,7 @@ const Box = ({  ...props }) => {
       onPointerOut={(event) => hover(false)}
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={'orange'} />{
+      <meshStandardMaterial color={!focus ? 'orange':'yellow'} />{
         props.children
       }
     </mesh>
