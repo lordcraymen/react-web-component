@@ -8,7 +8,7 @@ import { AlphaShader } from './AlphaShader'; // Replace with your actual import
 
 const Layer = ({ children, opacity = 1 }) => {
   const { scene, size, gl, camera } = useThree();
-  const layerContainer = useRef(new Scene().add(new AmbientLight(0xffffff, 1)));
+  const layerContainer = useRef(new Scene().add(new AmbientLight(0xffffff, 3)));
 
   const firstDepthTexture = useRef(new DepthTexture(size.width, size.height));
   const secondDepthTexture = useRef(new DepthTexture(size.width, size.height));
