@@ -10,6 +10,38 @@ const getOrderedChildrenState = (children: Map<HTMLElement, unknown>) => Array.f
     .sort((a, b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
     .map(key => children.get(key));
 
+const getFocusableChildren = (node:HTMLElement) => {
+    // Query for elements that could potentially receive focus
+    const focusableSelectors = 'a[href], button, input, textarea, select, details, [tabindex]';
+    const potentialFocusable = node.querySelectorAll(focusableSelectors)
+
+    // Filter elements based on visibility and being enabled
+    return Array.from(potentialFocusable).filter((el:HTMLInputElement) => {
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden' && !el.disabled;
+    })
+}
+
+const focusNextElement = (currentElement, focusableElements)  => {
+    const currentIndex = focusableElements.indexOf(currentElement);
+    const nextIndex = (currentIndex + 1) % focusableElements.length; // Loop back to the first element
+    currentFocussedElement = focusableElements[nextIndex]
+    console.log(currentFocussedElement)
+    currentElement.focus();
+}
+
+let currentFocussedElement = null;
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Tab' ) { // Example: Use right arrow key to move focus
+        const focusableChildren = getFocusableChildren(document.body);
+        const activeElement = currentFocussedElement || document.activeElement;
+        focusNextElement(activeElement, focusableChildren);
+    }
+});
+
+
+
 class ComponentTest extends HTMLElement {
     protected _properties: { [propname: string]: unknown };
     protected _parent: HTMLElement;
@@ -24,40 +56,40 @@ class ComponentTest extends HTMLElement {
 
     constructor(properties = {}, handlers = {}) {
         super();
-        
+
         this._instanceID = getUniqueID();
         this._handlers = handlers;
         this._properties = properties;
-         
+
         Object.entries(properties).forEach(([key, value]) => this[key] = value);
 
         this._state = {};
         this._subscribers = new Map();
-        
+        console.log(getFocusableChildren(this))
     }
 
 
     private handleEvent = (e) => {
         const { sender, action, newState } = e.detail;
 
-        if(this._subscribers.has(sender) && action === "unsubscribe") {
+        if (this._subscribers.has(sender) && action === "unsubscribe") {
             e.stopPropagation();
             this._subscribers.delete(sender);
             this.sendAction("update");
         } else
-        if (sender !== this && sender instanceof ComponentTest) {
-            e.stopPropagation();
-            this._subscribers.set(sender, newState);
-            this.sendAction("update");
-        }
+            if (sender !== this && sender instanceof ComponentTest) {
+                e.stopPropagation();
+                this._subscribers.set(sender, newState);
+                this.sendAction("update");
+            }
     }
 
     private sendAction = (action) => {
         if (this._parent) {
             const orderedChildrenState = getOrderedChildrenState(this._subscribers);
-            const tempState = {...this._state, root:this, instanceID: this._instanceID, children: orderedChildrenState}
+            const tempState = { ...this._state, root: this, instanceID: this._instanceID, children: orderedChildrenState }
             const newState = this._handlers.onUpdate?.(tempState) || tempState;
-            sendUpdate(this._parent, { sender: this, action, newState} );
+            sendUpdate(this._parent, { sender: this, action, newState });
         }
     }
 
@@ -65,10 +97,10 @@ class ComponentTest extends HTMLElement {
         console.log("connected")
         this.addEventListener(NOTIFICATION_EVENT, this.handleEvent);
         this._parent = this.parentElement;
-        this.sendAction("update");  
+        this.sendAction("update");
     }
 
-    attributeChangedCallback(name: string, oldValue:string, newValue: string) {
+    attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         this._state[name] !== newValue ? (this._state[name] = newValue, this.sendAction("update")) : null;
     }
 
