@@ -39,6 +39,7 @@ const SceneComponent = createTestWebComponent(
             const container = document.createElement("div");
             container.style.width = "100%";
             container.style.height = "100%";
+            container.addEventListener('focus', (e) => e.stopPropagation())
             const shadow = container.attachShadow({ mode: "open" });
             root.reactRoot = ReactDOM.createRoot(shadow);
             root.appendChild(container); 
