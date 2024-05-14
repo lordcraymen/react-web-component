@@ -26,9 +26,9 @@ const Box = ({ focus, ...props }) => {
   );
 };
 
-const POI = ({ targetPosition }) => {
-  const targetP = new Vector3(...targetPosition);
-  useFrame(({ camera }) => camera.position.lerp(targetP, 0.05))
+const POI = ({ position = [0,0,0], active = false }) => {
+  const targetP = new Vector3(...position);
+  useFrame(({ camera }) => active && camera.position.lerp(targetP, 0.05))
   return null
 }
 
@@ -74,10 +74,7 @@ const Scene = ({ children }) => {
         enableRotate
         enableZoom
       />
-      <POI targetPosition={[0, 0, -10]} />
-      <Group position={[2, 0, 0]}>
-        {children}
-      </Group>
+      {children}
     </Canvas>
   );
 };
@@ -85,4 +82,4 @@ const Scene = ({ children }) => {
 const Group = ({ children, position, scale, rotation }) =>
   <group {...{ children, position, scale, rotation }} />
 
-export { Scene, Box, Light, Group };
+export { Scene, Box, Light, Group, POI };
