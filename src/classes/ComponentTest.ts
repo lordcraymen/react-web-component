@@ -95,7 +95,6 @@ class ComponentTest extends HTMLElement {
     }
 
     connectedCallback() {
-        console.log("connected")
         this.addEventListener(NOTIFICATION_EVENT, this.handleEvent);
         this._parent = this.parentElement;
         this.sendAction("update");

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei'
 
 const Box = ({focus, ...props }) => {
@@ -25,6 +25,22 @@ const Box = ({focus, ...props }) => {
   );
 };
 
+const HookedOrbitControls = (props) => {
+  const test = useThree();
+  const oldEventHandler = test.gl.domElement.parentElement.parentElement.addEventListener;
+  console.log(test.gl.domElement.parentElement.parentElement.addEventListener = (type,handler) => {
+    if (type === 'pointerdown') {
+      return oldEventHandler('pointerdown',(e) => { e.preventDefault(); handler(e) });
+    } return oldEventHandler(type,handler);
+  });
+  return <OrbitControls
+  enableDamping
+  enablePan
+  enableRotate
+  enableZoom
+/>
+}
+
 const Light = () => <ambientLight intensity={Math.PI / 2} />
 
 const Scene = ({children}) => {
@@ -35,12 +51,8 @@ const Scene = ({children}) => {
       <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-      <OrbitControls
-        enableDamping
-        enablePan
-        enableRotate
-        enableZoom
-      />
+      <HookedOrbitControls />
+      
       <Group position={[2,0,0]}>
         {children}
         </Group>

@@ -14,7 +14,7 @@ const defineCustomElement = (tagName, component) => {
     customElements.define(tagName, component);
 }
 document.addEventListener("DOMContentLoaded", () =>
-   Array.from(componentStore).reverse().forEach(([key, value]) => value.parent.insertBefore(key, value.sibling))
+    Array.from(componentStore).reverse().forEach(([key, value]) => value.parent.insertBefore(key, value.sibling))
 );
 
 
@@ -26,8 +26,9 @@ const MainComponent = createTestWebComponent({}, {
 })
 defineCustomElement("mc-main-component", MainComponent);
 
-const ChildComponent = createTestWebComponent({ }, { 
-    onUpdate: () => <></> })
+const ChildComponent = createTestWebComponent({}, {
+    onUpdate: ({instanceID}) => <group key={instanceID}/>
+})
 defineCustomElement("mc-test-component", ChildComponent);
 
 
@@ -35,18 +36,18 @@ const SceneComponent = createTestWebComponent(
     {
     },
     {
-        onInit: (root) => { 
+        onInit: (root) => {
             const container = document.createElement("div");
             container.style.width = "100%";
             container.style.height = "100%";
             container.addEventListener('focus', (e) => { e.stopPropagation(); e.preventDefault() })
             const shadow = container.attachShadow({ mode: "open" });
             root.reactRoot = ReactDOM.createRoot(shadow);
-            root.appendChild(container); 
-            
-         },
+            root.appendChild(container);
+
+        },
         onUpdate: ({ root, children, instanceID }) => {
-            root.reactRoot.render(<Scene {...{key:instanceID, children}} />)
+            root.reactRoot.render(<Scene {...{ key: instanceID, children }} />)
         }
     })
 defineCustomElement("mc-scene", SceneComponent);
@@ -57,23 +58,21 @@ const BoxComponent = createTestWebComponent(
         "position": [0, 0, 0],
         "rotation": [0, 0, 0],
         "scale": 1,
-        "focus": false 
-       },
+        "focus": false
+    },
     {
-        onInit: (host) => { 
-            host.addEventListener('focus', () => { host.setAttribute("focus", "true")  })
-            host.addEventListener('blur', () => { host.setAttribute("focus", "false")  })
+        onInit: (host) => {
+            host.addEventListener('focus', () => { host.sendAction("update") })
+            host.addEventListener('blur', () => { host.sendAction("update") })
         },
-        onUpdate: ({ instanceID, position, rotation, scale, children, focus }) => {
-            console.log(focus)
-            return <Box
-                focus={focus === "true"}
+        onUpdate: ({ root, instanceID, position, rotation, scale, children }) =>
+            <Box
+                focus={document.activeElement === root}
                 key={instanceID}
                 position={Object.assign([0, 0, 0], String(position).split(",").map(Number))}
                 {...{ rotation: rotation ? String(rotation).split(",").map(Number) : [0, 0, 0] }}
                 scale={Number(scale) || 1}
             >{children}</Box>
-        }
     })
 
 
