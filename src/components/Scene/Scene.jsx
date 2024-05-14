@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Vector3 } from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei'
 
@@ -24,6 +25,12 @@ const Box = ({ focus, ...props }) => {
     </mesh>
   );
 };
+
+const POI = ({ targetPosition }) => {
+  const targetP = new Vector3(...targetPosition);
+  useFrame(({ camera }) => camera.position.lerp(targetP, 0.05))
+  return null
+}
 
 const HookedOrbitControls = () => {
   const { gl } = useThree();
@@ -67,6 +74,7 @@ const Scene = ({ children }) => {
         enableRotate
         enableZoom
       />
+      <POI targetPosition={[0, 0, -10]} />
       <Group position={[2, 0, 0]}>
         {children}
       </Group>
