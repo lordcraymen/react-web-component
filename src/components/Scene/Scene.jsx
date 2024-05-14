@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei'
 
@@ -27,20 +27,34 @@ const Box = ({ focus, ...props }) => {
 
 const HookedOrbitControls = () => {
   const { gl } = useThree();
-  const originalListener = gl.domElement.parentElement.parentElement.addEventListener;
-  gl.domElement.parentElement.parentElement.addEventListener = (type, handler) => {
-    if (type === 'pointerdown') {
-      return originalListener('pointerdown', (e) => { e.preventDefault(); handler(e) });
-    } return originalListener(type, handler);
-  };
+  useEffect(() => {
+    const target = gl.domElement.parentElement.parentElement;
+    const originalAddListener = target.addEventListener;
+    const originalRemoveListener = target.removeEventListener;
+
+    target.addEventListener = (type, handler) => {
+      if (type === 'pointerdown') {
+        return originalAddListener.call(target, 'pointerdown', (e) => { e.preventDefault(); handler(e) });
+      } 
+      return originalAddListener.call(target, type, handler);
+    };
+
+    target.removeEventListener = (type, handler) => {
+      return originalRemoveListener.call(target, type, handler);
+    };
+
+    return () => { 
+      target.addEventListener = originalAddListener;
+      target.removeEventListener = originalRemoveListener;
+    }
+  }, [gl.domElement])
+
   return null
 }
 
 const Light = () => <ambientLight intensity={Math.PI / 2} />
 
 const Scene = ({ children }) => {
-  const [focusedBox, setFocusedBox] = useState(null); // Track which box is focused
-
   return (
     <Canvas>
       <ambientLight intensity={Math.PI / 2} />
