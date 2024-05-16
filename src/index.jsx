@@ -1,7 +1,8 @@
 import ReactDOM from "react-dom/client";
 import React from "react";
 import { HostContext } from "./components/useHostContext/useHostContext";
-import { Scene, Box, Light, Group, POI } from "./components/Scene";
+import { Scene, Box, Light, Group } from "./components/Scene";
+import { POI } from "./components/POI";
 import { Model } from "./components/Model";
 import { Layer } from "./components/Layer";
 import { XR } from '@react-three/xr';
