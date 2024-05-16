@@ -5,6 +5,7 @@ import { Scene, Box, Light, Group, POI } from "./components/Scene";
 import { Model } from "./components/Model";
 import { Layer } from "./components/Layer";
 import { XR } from '@react-three/xr';
+import { Rotator } from "./components/Rotator";
 
 import { createTestWebComponent } from "./classes/ComponentTest";
 
@@ -177,6 +178,17 @@ const GroupComponent = createTestWebComponent(
             }
         })
 
+        const RotatorComponent = createTestWebComponent(
+        {
+            "active": true,
+        },
+        {
+            onUpdate: ({ instanceID, active, children }) => {
+                return <Rotator key={instanceID} active={active === "true" } >{children}</Rotator>
+            }
+        })
+
+defineCustomElement("mc-rotator", RotatorComponent);
 defineCustomElement("mc-poi", POIComponent);
 defineCustomElement("mc-box", BoxComponent);
 defineCustomElement("mc-group", GroupComponent);

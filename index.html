@@ -54,13 +54,15 @@
   </mc-main-component>
   -->
   <mc-scene id="SceneRoot">
-        <mc-layer>
-          <mc-box position="2,0,0" scale="2"></mc-box>
-        </mc-layer>
-        <mc-box position="-2,0,0" scale="1" tabindex="0"></mc-box>
-        <mc-poi tabindex="0" position="0,0,-13"></mc-poi>
-        <mc-poi tabindex="0" position="0,-10,0"></mc-poi>
-        <mc-poi tabindex="0" position="10,0,0"></mc-poi>
+    <mc-layer>
+      <mc-box position="2,0,0" scale="2"></mc-box>
+    </mc-layer>
+    <mc-rotator active="true">
+      <mc-box position="-2,0,0" scale="1" tabindex="0"></mc-box>
+    </mc-rotator>
+    <mc-poi tabindex="0" position="0,0,-13"></mc-poi>
+    <mc-poi tabindex="0" position="0,-10,0"></mc-poi>
+    <mc-poi tabindex="0" position="10,0,0"></mc-poi>
   </mc-scene>
 </body>
 
