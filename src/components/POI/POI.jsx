@@ -1,53 +1,42 @@
-import { useRef, useEffect } from 'react';
-import { Vector3, Quaternion } from 'three';
-import { useFrame } from '@react-three/fiber';
+import { useMemo } from 'react';
+import { Vector3, Spherical } from 'three';
+import { useFrame, useThree } from '@react-three/fiber';
 
-const createQuaternions = (startPosition, endPosition) => {
-  const startQuaternion = new Quaternion().setFromUnitVectors(
-    startPosition.clone().normalize(),
-    new Vector3(0, 0, 1)
-  );
-  
-  const endQuaternion = new Quaternion().setFromUnitVectors(
-    endPosition.clone().normalize(),
-    new Vector3(0, 0, 1)
-  );
+const POI = ({ position = [0,0,0], target = [0,0,0], active = false }) => {
+  const { camera } = useThree();
 
-  return { startQuaternion, endQuaternion };
-};
+  // Memoize the initial position and target
+  const initialPosition = useMemo(() => new Vector3(...position), [position]);
+  const targetPosition = useMemo(() => new Vector3(...target), [target]);
 
-const POI = ({ position = [0, 0, 0], active = false }) => {
-  const targetP = new Vector3(...position);
-  const cameraPositionRef = useRef(new Vector3());
-  const timerRef = useRef(0);
-  const quaternionsRef = useRef(null);
+  // Convert initial position and new position to spherical coordinates
+  const initialSpherical = useMemo(() => new Spherical().setFromVector3(initialPosition.clone().sub(targetPosition)), [initialPosition, target]);
+  const targetSpherical = useMemo(() => new Spherical().setFromVector3(new Vector3(...position).sub(targetPosition)), [position, target]);
 
-  useEffect(() => {
-    // Initialize camera position and quaternions
-    const cameraStartPosition = cameraPositionRef.current.clone();
-    quaternionsRef.current = createQuaternions(cameraStartPosition, targetP);
-  }, [position]);
+  useFrame(() => {
+    if (active) {
+      camera.position.lerp(initialPosition,0.05)
+      //console.log(camera)
+      /*
+      const t = 0.01; // Interpolation factor
 
-  useFrame(({ camera }) => {
-    if (active && quaternionsRef.current) {
-      const { startQuaternion, endQuaternion } = quaternionsRef.current;
-      const t = timerRef.current += 0.001;
+      // Linearly interpolate spherical coordinates
+      initialSpherical.theta += (targetSpherical.theta - initialSpherical.theta) * t;
+      initialSpherical.phi += (targetSpherical.phi - initialSpherical.phi) * t;
+      initialSpherical.radius += (targetSpherical.radius - initialSpherical.radius) * t;
 
-      if (t < 1) {
-        const interpolatedQuaternion = new Quaternion().slerpQuaternions(
-          startQuaternion,
-          endQuaternion,
-          t
-        );
-        
-        const direction = new Vector3(0, 0, -1).applyQuaternion(interpolatedQuaternion);
-        camera.position.copy(direction.multiplyScalar(camera.position.length()));
-        camera.lookAt(0, 0, 0);
-      }
+      // Convert back to Cartesian coordinates and set camera position
+      const interpolatedPosition = new Vector3().setFromSpherical(initialSpherical).add(targetPosition);
+      camera.position.copy(interpolatedPosition);
+
+      // Ensure the camera looks at the target
+      camera.lookAt(targetPosition);
+      */
     }
   });
 
   return null;
 };
 
-export { POI }
+export { POI };
+
