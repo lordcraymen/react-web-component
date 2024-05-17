@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Vector3, Spherical } from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 const POI = ({ position = [0,0,0], target = [0,0,0], active = false }) => {
   const { camera } = useThree();
