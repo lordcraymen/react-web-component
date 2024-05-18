@@ -7,8 +7,6 @@ const Box = ({ focus, ...props }) => {
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
 
-  useFrame((state, delta) => (ref.current.rotation.x += delta));
-
   return (
     <mesh
       {...props}
@@ -56,18 +54,18 @@ const Light = () => <ambientLight intensity={Math.PI / 2} />
 
 const Scene = ({ children }) => {
   return (
-    <Canvas>
+    <Canvas frameloop="demand">
       <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
       <HookedOrbitControls />
-      {/*
+      {
       <OrbitControls
         enableDamping
         enablePan
         enableRotate
         enableZoom
-      /> */}
+      /> }
       {children}
     </Canvas>
   );
