@@ -75,16 +75,14 @@ const Scene = ({ children }) => {
     <GlobalBackground/>
       <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
-      <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-      
-      { /*
+      <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} /> 
       <HookedOrbitControls />
       <OrbitControls
         enableDamping
         enablePan
         enableRotate
         enableZoom
-      /> */}
+      />
       {children}
     </Canvas>
   );
@@ -92,5 +90,7 @@ const Scene = ({ children }) => {
 
 const Group = ({ children, position, scale, rotation }) =>
   <group {...{ children, position, scale, rotation }} />
+
+
 
 export { Scene, Box, Light, Group };

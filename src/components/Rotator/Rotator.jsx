@@ -5,18 +5,23 @@ import { Group, Vector2, Quaternion, Euler } from 'three';
 const Rotator = ({ children }) => {
   const rotator = useRef(new Group());
   const originalOrientation = useRef(rotator.current.quaternion.clone());
-  const rotating = useRef(false);
+  
   const pointerStart = useRef(new Vector2());
   const startQuaternion = useRef(new Quaternion());
 
   const onPointerDown = (event) => {
     pointerStart.current.set(event.clientX, event.clientY);
     startQuaternion.current.copy(rotator.current.quaternion);
+
+    const { target } = event.nativeEvent;
+
+    console.log(target);
     
-    window.addEventListener('pointermove', handlePointerMove);
+    const releasePointerMove = target.addEventListener('pointermove', (e) => { e.stopPropagation(); handlePointerMove(e)});
     const releasePointerUp = window.addEventListener('pointerup', () => { 
-        window.removeEventListener('pointermove', handlePointerMove);
-        window.removeEventListener('pointerup',releasePointerUp) }, { once: true });
+        alert('pointerup')
+        target.removeEventListener('pointermove', releasePointerMove);
+        target.removeEventListener('pointerup',releasePointerUp) }, { once: true });
   };
 
   const handlePointerMove = (event) => {
