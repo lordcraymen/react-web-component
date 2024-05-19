@@ -13,15 +13,8 @@ const Rotator = ({ children }) => {
     pointerStart.current.set(event.clientX, event.clientY);
     startQuaternion.current.copy(rotator.current.quaternion);
 
-    const { target } = event.nativeEvent;
-
-    console.log(target);
-    
-    const releasePointerMove = target.addEventListener('pointermove', (e) => { e.stopPropagation(); handlePointerMove(e)});
-    const releasePointerUp = window.addEventListener('pointerup', () => { 
-        alert('pointerup')
-        target.removeEventListener('pointermove', releasePointerMove);
-        target.removeEventListener('pointerup',releasePointerUp) }, { once: true });
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', () => window.removeEventListener('pointermove', handlePointerMove, { once: true }))
   };
 
   const handlePointerMove = (event) => {
