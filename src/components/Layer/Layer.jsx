@@ -36,10 +36,16 @@ const Layer = ({ children, opacity = 1 }) => {
   finalPass.current.material.uniforms.opacity.value = _opacity;
 
 
-  useFrame(() => { 
+  useFrame(({camera}) => { 
+    
     secondComposer.current.render();
     firstComposer.current.render();
 },1);
+
+useEffect(() => {
+  firstPass.current.camera = camera;
+    secondPass.current.camera = camera;
+}, [camera]);
 
 
   useEffect(() => {

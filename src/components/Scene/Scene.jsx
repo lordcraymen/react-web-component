@@ -70,20 +70,17 @@ const GlobalBackground = ({children}) => {
 }
 
 const Camera = () => {
-  const cameraRef = useRef();
-  const { set } = useThree();
+  const { set, camera, scene, size } = useThree();
+  const myCamera = useRef();
 
   useEffect(() => {
-    if (cameraRef.current) {
-      set({ camera: cameraRef.current });
+    if (myCamera.current) {
+      console.log(myCamera.current, scene)
+      set({ camera: myCamera.current });
     }
   }, [set]);
 
-  return (
-    <group rotation={[0, Math.PI / 2, 0]}>
-      <PerspectiveCamera ref={cameraRef} position={[0, 0, 0]} />
-    </group>
-  );
+  return <perspectiveCamera ref={myCamera} fov={30} aspect={size.width / size.height} near={0.1} far={1000} position={[0,0,10]}/>;
 };
 
 const Scene = ({ children }) => {
@@ -94,10 +91,8 @@ const Scene = ({ children }) => {
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} /> 
       <Rotator>
           <GlobalBackground>
-          <Torus args={[1, 0.5, 16, 100]} position={[0, 0, 0]} >
-            <meshStandardMaterial color="red" />
-          </Torus>
-            </GlobalBackground>
+              <Camera />
+          </GlobalBackground>
       </Rotator>
       {children}
     </Canvas>
