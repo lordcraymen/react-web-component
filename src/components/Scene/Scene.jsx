@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame, useThree, invalidate} from '@react-three/fiber';
-import { OrbitControls,} from '@react-three/drei'
+import { OrbitControls,PerspectiveCamera, Torus} from '@react-three/drei'
 import { BackSide, Vector3 } from 'three';
 import { InteractionEventContextProvider } from '../../contexts/InteractionEventContext';
+import { Rotator } from '../Rotator/Rotator';
 
 const Box = ({ focus, ...props }) => {
   const ref = useRef();
@@ -64,24 +65,40 @@ const InvisibleMaterial = () => <meshBasicMaterial {...{
     side: BackSide
   }} />
 
-const GlobalBackground = (props) => {
-  const { camera } = useThree();
-  return <mesh onPointerMove={e => {  /* camera.lookAt(e.normal.negate()); invalidate() */}}><sphereGeometry args={[10000, 60, 60]} renderOrder={-1}/><InvisibleMaterial /></mesh>;
+const GlobalBackground = ({children}) => {
+  return <mesh><sphereGeometry args={[10000, 60, 60]} renderOrder={-1}/><InvisibleMaterial />{children}</mesh>;
 }
+
+const Camera = () => {
+  const cameraRef = useRef();
+  const { set } = useThree();
+
+  useEffect(() => {
+    if (cameraRef.current) {
+      set({ camera: cameraRef.current });
+    }
+  }, [set]);
+
+  return (
+    <group rotation={[0, Math.PI / 2, 0]}>
+      <PerspectiveCamera ref={cameraRef} position={[0, 0, 0]} />
+    </group>
+  );
+};
 
 const Scene = ({ children }) => {
   return (
     <Canvas frameloop="demand">
-    <GlobalBackground/>
-      <ambientLight intensity={Math.PI / 2} />
+    <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} /> 
-      <OrbitControls
-        enableDamping
-        enablePan
-        enableRotate
-        enableZoom
-      />
+      <Rotator>
+          <GlobalBackground>
+          <Torus args={[1, 0.5, 16, 100]} position={[0, 0, 0]} >
+            <meshStandardMaterial color="red" />
+          </Torus>
+            </GlobalBackground>
+      </Rotator>
       {children}
     </Canvas>
   );

@@ -1,23 +1,34 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useThree, invalidate } from '@react-three/fiber';
 import { Group, Vector2, Quaternion, Euler } from 'three';
 
 const Rotator = ({ children }) => {
   const rotator = useRef(new Group());
   const originalOrientation = useRef(rotator.current.quaternion.clone());
+
+  const domElement = useThree((state) => state.gl.domElement);
+
+  const [cursorStyle, setCursorStyle] = useState('auto')
+
+  useEffect(() => {
+      if(domElement) { domElement.style.cursor = cursorStyle }
+  }, [domElement, cursorStyle])
   
   const pointerStart = useRef(new Vector2());
   const startQuaternion = useRef(new Quaternion());
 
   const onPointerDown = (event) => {
+    setCursorStyle('grabbing')
+    event.stopPropagation();
     pointerStart.current.set(event.clientX, event.clientY);
     startQuaternion.current.copy(rotator.current.quaternion);
 
     window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', () => window.removeEventListener('pointermove', handlePointerMove, { once: true }))
+    window.addEventListener('pointerup', () => { setCursorStyle('auto'); window.removeEventListener('pointermove', handlePointerMove, { once: true })})
   };
 
   const handlePointerMove = (event) => {
+
       const pointerDelta = new Vector2(
         event.clientX - pointerStart.current.x,
         event.clientY - pointerStart.current.y
@@ -34,8 +45,10 @@ const Rotator = ({ children }) => {
       invalidate();
   };
 
+  const onPointerOver = () => { setCursorStyle('grab')}
+
   return (
-    <group ref={rotator} {...{ onPointerDown }}>
+    <group ref={rotator} {...{ onPointerDown, onPointerOver }}>
       {children}
     </group>
   );
