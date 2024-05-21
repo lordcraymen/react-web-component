@@ -4,6 +4,7 @@ import { OrbitControls,PerspectiveCamera, Torus} from '@react-three/drei'
 import { BackSide, Vector3 } from 'three';
 import { InteractionEventContextProvider } from '../../contexts/InteractionEventContext';
 import { Rotator } from '../Rotator/Rotator';
+import { Zoom } from '../Zoom';
 
 const Box = ({ focus, ...props }) => {
   const ref = useRef();
@@ -80,7 +81,10 @@ const Camera = () => {
     }
   }, [set]);
 
-  return <perspectiveCamera ref={myCamera} fov={30} aspect={size.width / size.height} near={0.1} far={1000} position={[0,0,10]}/>;
+  return <>
+  <Zoom />
+  <perspectiveCamera ref={myCamera} fov={30} aspect={size.width / size.height} near={0.1} far={1000} position={[0,0,10]}/>
+  </>;
 };
 
 const Scene = ({ children }) => {
