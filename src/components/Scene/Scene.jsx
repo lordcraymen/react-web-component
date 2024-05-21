@@ -67,23 +67,24 @@ const InvisibleMaterial = () => <meshBasicMaterial {...{
   }} />
 
 const GlobalBackground = ({children}) => {
-  return <mesh><sphereGeometry args={[10000, 60, 60]} renderOrder={-1}/><InvisibleMaterial />{children}</mesh>;
+  return <mesh><sphereGeometry args={[10000, 1, 1]} renderOrder={-1}/><InvisibleMaterial />{children}</mesh>;
 }
 
 const Camera = () => {
-  const { set, camera, scene, size } = useThree();
-  const myCamera = useRef();
+  const camera = useThree(state => state.camera);
+  const groupRef = useRef();
 
   useEffect(() => {
-    if (myCamera.current) {
-      console.log(myCamera.current, scene)
-      set({ camera: myCamera.current });
+    if (groupRef.current) {
+      const originalParent = camera.parent;
+      groupRef.current.add(camera);
+      return () => { originalParent.add(camera) }
     }
-  }, [set]);
+  }, [camera]);
 
   return <>
   <Zoom />
-  <perspectiveCamera ref={myCamera} fov={30} aspect={size.width / size.height} near={0.1} far={1000} position={[0,0,10]}/>
+  <group ref={groupRef}/>
   </>;
 };
 
