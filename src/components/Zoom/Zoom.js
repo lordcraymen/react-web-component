@@ -7,22 +7,22 @@ const Zoom = () => {
   const velocity = useRef(0);
 
   const handleWheel = (event) => {
-    velocity.current += event.deltaY * 0.001; // adjust sensitivity
+    velocity.current += event.deltaY * 0.005; // adjust sensitivity
   };
 
   useFrame(() => {
     if (velocity.current !== 0) {
       // move camera along its viewing direction
       const direction = camera.getWorldDirection(new Vector3()).multiplyScalar(velocity.current);
+      camera.parent.worldToLocal(direction);
       camera.position.add(direction);
 
       // damping
-      velocity.current *= 0.9;
+      velocity.current *= 0.8;
 
       if (Math.abs(velocity.current) < 0.001) {
         velocity.current = 0;
       }
-      invalidate()
     }
   });
 
