@@ -83,14 +83,14 @@ const Camera = () => {
   }, [camera]);
 
   return <>
-  <Zoom />
+  <Zoom speed={1}/>
   <group ref={groupRef}/>
   </>;
 };
 
 const Scene = ({ children }) => {
   return (
-    <Canvas /* frameloop="demand" */>
+    <Canvas frameloop="demand">
     <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} /> 

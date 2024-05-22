@@ -62,7 +62,23 @@ class ComponentTest extends HTMLElement {
         this._handlers = handlers;
         this._properties = properties;
 
-        Object.entries(properties).forEach(([key, value]) => this[key] = value);
+        Object.entries(properties).forEach(([key, value]) => {
+            Object.defineProperty(this, key, {
+              get: function() {
+                return this._properties[key];
+              },
+              set: function(newValue) {
+                this._properties[key] = newValue;
+                this.setAttribute(key, newValue);
+              },
+              enumerable: true,
+              configurable: true
+            });
+      
+
+            if (this.hasAttribute(key)) { this._properties[key] = this.getAttribute(key)
+            } else { this[key] = value}
+        });
 
         this._state = {};
         this._subscribers = new Map();

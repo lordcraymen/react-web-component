@@ -1,13 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { Vector3 } from 'three';
-import { useThree, useFrame, invalidate } from '@react-three/fiber';
+import { useThree, useFrame } from '@react-three/fiber';
 
-const Zoom = () => {
+const Zoom = ({speed = 1}) => {
   const { camera, gl } = useThree();
   const velocity = useRef(0);
 
   const handleWheel = (event) => {
-    velocity.current += event.deltaY * 0.005; // adjust sensitivity
+    const deltaMultipliers = { 1: 16, 2: 100 };
+    velocity.current += event.deltaY * (deltaMultipliers[event.mode] || 1) * (speed / 200); // adjust sensitivity
   };
 
   useFrame(() => {
