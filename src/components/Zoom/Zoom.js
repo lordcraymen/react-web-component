@@ -4,34 +4,21 @@ import { invalidate, useThree } from '@react-three/fiber';
 
 
 const useLoop = (callback) => {
-  const whileTrue = useRef(true);
-  const callbackRef = useRef(callback);
 
-  useEffect(() => {
-    callbackRef.current = callback;
-  }, [callback]);
+  const whileTrue = useRef(false);
+  const frameRequest = useRef(-1);
 
-  const loop = useCallback(() => {
-    if (whileTrue.current && typeof callbackRef.current === 'function') {
-      if (callbackRef.current() !== false) {
-        requestAnimationFrame(loop);
-      } else {
-        whileTrue.current = false;
-      }
+
+  const loop = useCallback(() => { 
+    if(whileTrue.current) {
+      whileTrue.current = callback()
+      whileTrue.current && (frameRequest.current = requestAnimationFrame(loop));
     }
-  }, []);
+    }, [callback]);
 
-  useEffect(() => {
-    if (typeof callbackRef.current === 'function') {
-      requestAnimationFrame(loop);
-    }
-    return () => {
-      whileTrue.current = false; // Stop the loop on cleanup
-    };
-  }, [loop]);
+  useEffect(() => () => { cancelAnimationFrame(frameRequest.current);}, [loop]);
 
-  return useCallback(() => {
-    if (!whileTrue.current) {
+  return useCallback(() => { if (!whileTrue.current) {
       whileTrue.current = true;
       loop();
     }

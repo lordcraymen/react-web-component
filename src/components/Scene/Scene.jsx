@@ -78,7 +78,7 @@ const Camera = () => {
     if (groupRef.current) {
       const originalParent = camera.parent;
       groupRef.current.add(camera);
-      return () => { originalParent.add(camera) }
+      return () => { originalParent?.add(camera) }
     }
   }, [camera]);
 
