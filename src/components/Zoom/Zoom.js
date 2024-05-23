@@ -13,7 +13,7 @@ const useLoop = (callback) => {
     }
   }, [callback]);
 
-  useEffect(() => () => cancelAnimationFrame(frameRef.current), []);
+  useEffect(() => () => { cancelAnimationFrame(frameRef.current) }, []);
 
   return useCallback(() => {
     if (!active.current) {
