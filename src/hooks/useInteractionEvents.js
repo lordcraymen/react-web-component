@@ -5,7 +5,7 @@ import { EventStore } from '../stores/EventStore';
 import { useThree } from '@react-three/fiber';
 
 const useInteractionEvents = (events) => {
-  const {domElement} = useThree(state => state.gl);
+  const { domElement } = useThree(state => state.gl);
 
   useEffect(() => {
     EventStore.initialize(domElement);

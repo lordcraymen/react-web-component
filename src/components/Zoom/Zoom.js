@@ -5,7 +5,9 @@ import  {useLoopWhileTrue} from '../../hooks/useLoopWhileTrue';
 
 
 const Zoom = ({speed = 1}) => {
-  const { camera, gl } = useThree();
+  const camera = useThree(state => state.camera);
+  const { domElement } = useThree(state => state.gl);
+  
   const velocity = useRef(0);
   
   const update = useLoopWhileTrue(() => {
@@ -20,16 +22,17 @@ const Zoom = ({speed = 1}) => {
   })
 
   const handleWheel = (event) => {
+    event.preventDefault();
     velocity.current += event.deltaY * ({ 1: 16, 2: 100 }[event.deltaMode] || 1) * (speed / 200);
     update();
   };
 
   useEffect(() => {
-    gl.domElement.addEventListener('wheel', handleWheel);
+    domElement.addEventListener('wheel', handleWheel);
     return () => {
-      gl.domElement.removeEventListener('wheel', handleWheel)
+      domElement.removeEventListener('wheel', handleWheel)
     };
-  }, [gl.domElement, handleWheel]);
+  }, [domElement, handleWheel]);
 
   return null;
 };

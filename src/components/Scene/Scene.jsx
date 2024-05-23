@@ -5,6 +5,7 @@ import { BackSide, Vector3 } from 'three';
 import { InteractionEventContextProvider } from '../../contexts/InteractionEventContext';
 import { Rotator } from '../Rotator/Rotator';
 import { Zoom } from '../Zoom';
+import { Pan } from '../Pan';
 
 const Box = ({ focus, ...props }) => {
   const ref = useRef();
@@ -26,33 +27,6 @@ const Box = ({ focus, ...props }) => {
     </mesh>
   );
 };
-
-const HookedOrbitControls = () => {
-  const { gl } = useThree();
-  useEffect(() => {
-    const target = gl.domElement.parentElement.parentElement;
-    const originalAddListener = target.addEventListener;
-    const originalRemoveListener = target.removeEventListener;
-
-    target.addEventListener = (type, handler) => {
-      if (type === 'pointerdown') {
-        return originalAddListener.call(target, 'pointerdown', (e) => { e.preventDefault(); handler(e) });
-      } 
-      return originalAddListener.call(target, type, handler);
-    };
-
-    target.removeEventListener = (type, handler) => {
-      return originalRemoveListener.call(target, type, handler);
-    };
-
-    return () => { 
-      target.addEventListener = originalAddListener;
-      target.removeEventListener = originalRemoveListener;
-    }
-  }, [gl.domElement])
-
-  return null
-}
 
 const Light = () => <ambientLight intensity={Math.PI / 2} />
 
@@ -81,11 +55,7 @@ const Camera = () => {
       return () => { originalParent?.add(camera) }
     }
   }, [camera]);
-
-  return <>
-  <Zoom speed={1}/>
-  <group ref={groupRef}/>
-  </>;
+  return <group ref={groupRef} />
 };
 
 const Scene = ({ children }) => {
@@ -94,11 +64,14 @@ const Scene = ({ children }) => {
     <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} /> 
+      <Pan>
       <Rotator>
           <GlobalBackground>
               <Camera />
+              <Zoom speed={1}/>
           </GlobalBackground>
       </Rotator>
+      </Pan>
       {children}
     </Canvas>
   );

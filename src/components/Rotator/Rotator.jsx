@@ -18,8 +18,8 @@ const Rotator = ({ children }) => {
   const startQuaternion = useRef(new Quaternion());
 
   const onPointerDown = (event) => {
+    if(event.ctrlKey) return
     setCursorStyle('grabbing')
-    event.stopPropagation();
     pointerStart.current.set(event.clientX, event.clientY);
     startQuaternion.current.copy(rotator.current.quaternion);
 
@@ -45,7 +45,7 @@ const Rotator = ({ children }) => {
       invalidate();
   };
 
-  const onPointerOver = () => { setCursorStyle('grab')}
+  const onPointerOver = () => { setCursorStyle('grab') }
 
   return (
     <group ref={rotator} {...{ onPointerDown, onPointerOver }}>
