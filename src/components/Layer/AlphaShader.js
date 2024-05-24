@@ -1,3 +1,5 @@
+import { vertextPassThrough } from "../../shaders/default";
+
 const AlphaShader = {
 
   name: 'Alphashader',
@@ -10,18 +12,9 @@ const AlphaShader = {
     'opacity': { value: 1 }
   },
 
-  vertexShader: /* glsl */`
+  vertexShader:vertextPassThrough,
 
-    varying vec2 vUv;
-
-    void main() {
-
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-    }`,
-
-  fragmentShader: /* glsl */`
+  fragmentShader: `
 
   uniform float opacity;
 
