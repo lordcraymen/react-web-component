@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Canvas, useFrame, useThree, invalidate} from '@react-three/fiber';
-import { OrbitControls,PerspectiveCamera, Torus} from '@react-three/drei'
-import { BackSide, Vector3 } from 'three';
-import { InteractionEventContextProvider } from '../../contexts/InteractionEventContext';
+import { Canvas, useThree} from '@react-three/fiber';
+import { BackSide } from 'three';
 import { Rotator } from '../Rotator/Rotator';
 import { Zoom } from '../Zoom';
 import { Pan } from '../Pan';
+import { prefersreducedMotion } from '../../helpers/checkReducedMotion';
 
 const Box = ({ focus, ...props }) => {
   const ref = useRef();
@@ -79,7 +78,5 @@ const Scene = ({ children }) => {
 
 const Group = ({ children, position, scale, rotation }) =>
   <group {...{ children, position, scale, rotation }} />
-
-
 
 export { Scene, Box, Light, Group };
