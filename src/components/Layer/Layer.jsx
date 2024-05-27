@@ -5,6 +5,9 @@ import { EffectComposer,  } from 'three/examples/jsm/postprocessing/EffectCompos
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
 import { AlphaShader } from './AlphaShader'; // Replace with your actual import
+import { useLayer } from '../../contexts/LayerContext';
+
+/*
 
 let counter = 0;
 
@@ -75,5 +78,14 @@ const Layer = ({ children, opacity = 1 }) => {
     </>
   );
 };
+
+*/
+
+const Layer = ({ children, opacity = 1 }) => {
+
+  const scene = useLayer(children)
+  return createPortal(children, scene)
+}
+
 
 export { Layer }

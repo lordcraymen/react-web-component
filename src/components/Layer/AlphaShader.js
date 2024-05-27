@@ -1,4 +1,4 @@
-import { vertextPassThrough } from "../../shaders/default";
+import { vertexPassThrough } from "../../shaders/default";
 
 const AlphaShader = {
 
@@ -12,7 +12,7 @@ const AlphaShader = {
     'opacity': { value: 1 }
   },
 
-  vertexShader:vertextPassThrough,
+  vertexShader:vertexPassThrough,
 
   fragmentShader: `
 

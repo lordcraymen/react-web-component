@@ -5,6 +5,7 @@ import { Rotator } from '../Rotator/Rotator';
 import { Zoom } from '../Zoom';
 import { Pan } from '../Pan';
 import { prefersreducedMotion } from '../../helpers/checkReducedMotion';
+import { LayerProvider } from '../../contexts/LayerContext';
 
 const Box = ({ focus, ...props }) => {
   const ref = useRef();
@@ -60,18 +61,20 @@ const Camera = () => {
 const Scene = ({ children }) => {
   return (
     <Canvas frameloop="demand">
-    <ambientLight intensity={Math.PI / 2} />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
-      <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} /> 
-      <Pan>
-      <Rotator>
-          <GlobalBackground>
-              <Camera />
-              <Zoom speed={1}/>
-          </GlobalBackground>
-      </Rotator>
-      </Pan>
-      {children}
+      <LayerProvider>
+        <ambientLight intensity={Math.PI / 2} />
+          <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
+          <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} /> 
+          <Pan>
+          <Rotator>
+              <GlobalBackground>
+                  <Camera />
+                  <Zoom speed={1}/>
+              </GlobalBackground>
+          </Rotator>
+          </Pan>
+          {children}
+      </LayerProvider>
     </Canvas>
   );
 };
