@@ -29,7 +29,7 @@ const LayerProvider = ({ children }) => {
         firstPass.renderToScreen = false;
         Composer.addPass(firstPass);
         layerStack.forEach(layer => {
-            const pass = new RenderPass(scene,camera);
+            const pass = new RenderPass(layer.scene,layer.camera || camera);
             pass.clear = false;
             Composer.addPass(pass)}
         ); 
