@@ -6,6 +6,8 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
 import { AlphaShader } from './AlphaShader'; // Replace with your actual import
 
+let counter = 0;
+
 const Layer = ({ children, opacity = 1 }) => {
   const { scene, size, gl, camera } = useThree();
   const layerContainer = useRef(new Scene().add(new AmbientLight(0xffffff, 3)));
@@ -35,17 +37,15 @@ const Layer = ({ children, opacity = 1 }) => {
 
   finalPass.current.material.uniforms.opacity.value = _opacity;
 
-
   useFrame(({camera}) => { 
-    
     secondComposer.current.render();
     firstComposer.current.render();
-},1);
+  },counter++);
 
-useEffect(() => {
-  firstPass.current.camera = camera;
-    secondPass.current.camera = camera;
-}, [camera]);
+  useEffect(() => {
+    firstPass.current.camera = camera;
+      secondPass.current.camera = camera;
+  }, [camera]);
 
 
   useEffect(() => {
