@@ -83,8 +83,8 @@ const Layer = ({ children, opacity = 1 }) => {
 
 const Layer = ({ children, opacity = 1 }) => {
 
-  const scene = useLayer(children)
-  return createPortal(children, scene)
+  const layer = useLayer()
+  return createPortal(children, layer)
 }
 
 

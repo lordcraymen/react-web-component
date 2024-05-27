@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useMemo } from 'react';
 import { Scene, AmbientLight } from 'three';
-import { useFrame } from '@react-three/fiber';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { useFrame, useThree } from '@react-three/fiber';
 
 // Erstellen Sie den ComposerContext
 
@@ -10,10 +12,24 @@ const LayerContext = createContext({layers: layerStack});
 
 // Erstellen Sie den Provider
 const LayerProvider = ({ children }) => {
+    const gl = useThree(state => state.gl);
+    const size = useThree(state => state.size);
+    const scene = useThree(state => state.scene);
+    const camera = useThree(state => state.camera);
 
-    useFrame(({scene,camera,gl}) => {
-        gl.render(scene, camera);
-        layerStack.forEach((target) => { gl.render(target.scene, target.camera || camera); });
+    const Composer = useMemo(() => { 
+        const Composer = new EffectComposer(gl); 
+        Composer.setSize(size.width,size.height); 
+        return Composer },
+    [gl,size]);
+
+    useEffect(() => {
+        Composer.addPass(new RenderPass(scene,camera));
+        layerStack.forEach(layer => Composer.addPass(new RenderPass(layer.scene, layer.camera || camera))); 
+    }, [Composer,scene,camera]);
+
+    useFrame(() => {
+        Composer.render();
     },1);
 
     return (
@@ -24,17 +40,15 @@ const LayerProvider = ({ children }) => {
 };
 
 // Erstellen Sie den Hook
-const useLayer = (objects = [], camera) => {
+const useLayer = (camera) => {
     const { layers } = useContext(LayerContext);
     const scene = useRef(new Scene().add(new AmbientLight(0xffffff, 3)));
 
     useEffect(() => {
-        if(!objects.length) return;
         const layer = { scene: scene.current, camera};
-        objects.forEach((object) => layer.scene.add(object));
         layers.add(layer);
         return () => { layers.delete(layer) }
-    }, [objects, camera]);
+    }, [camera]);
     
     return scene.current;
 };
