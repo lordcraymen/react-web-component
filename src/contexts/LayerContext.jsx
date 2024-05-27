@@ -24,8 +24,15 @@ const LayerProvider = ({ children }) => {
     [gl,size]);
 
     useEffect(() => {
-        Composer.addPass(new RenderPass(scene,camera));
-        layerStack.forEach(layer => Composer.addPass(new RenderPass(layer.scene, layer.camera || camera))); 
+        const firstPass = new RenderPass(scene,camera);
+        firstPass.clearDepth = false;
+        firstPass.renderToScreen = false;
+        Composer.addPass(firstPass);
+        layerStack.forEach(layer => {
+            const pass = new RenderPass(scene,camera);
+            pass.clear = false;
+            Composer.addPass(pass)}
+        ); 
     }, [Composer,scene,camera]);
 
     useFrame(() => {
