@@ -1,12 +1,16 @@
-import { vertextPassThrough } from "./default";
+import {DataTexture, RGBAFormat} from 'three';
+import { vertexPassThrough } from "./default";
+
+const transparentPixel = new Uint8Array([0, 0, 0, 0]);
+const transparentTexture = new DataTexture(transparentPixel, 1, 1, RGBAFormat);
 
 const BlendShader = {
     uniforms: {
-        t1: { value: null },
-        t2: { value: null },
+        t1: { value: transparentTexture },
+        t2: { value: transparentTexture },
         mixRatio: { value: 0.0 }
     },
-    vertexShader: vertextPassThrough,
+    vertexShader: vertexPassThrough,
     fragmentShader: `
         uniform sampler2D t1;
         uniform sampler2D t2;
