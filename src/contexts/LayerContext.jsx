@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useMemo, useState } from 'react';
 import { Scene, AmbientLight } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
@@ -6,9 +6,9 @@ import { useFrame, useThree } from '@react-three/fiber';
 
 // Erstellen Sie den ComposerContext
 
-const layerStack = new Set()
 
-const LayerContext = createContext({layers: layerStack});
+
+const LayerContext = createContext({addLayer: () => {}});
 
 // Erstellen Sie den Provider
 const LayerProvider = ({ children }) => {
@@ -16,6 +16,8 @@ const LayerProvider = ({ children }) => {
     const size = useThree(state => state.size);
     const scene = useThree(state => state.scene);
     const camera = useThree(state => state.camera);
+
+    const [layerStack, addLayer] = useState(new Set())
 
     const Composer = useMemo(() => { 
         const Composer = new EffectComposer(gl); 
@@ -32,15 +34,16 @@ const LayerProvider = ({ children }) => {
             const pass = new RenderPass(layer.scene,layer.camera || camera);
             pass.clear = false;
             Composer.addPass(pass)}
-        ); 
-    }, [Composer,scene,camera]);
+        );
+        return () => { Composer.passes = [] }; 
+    }, [layerStack, Composer,scene,camera]);
 
     useFrame(() => {
         Composer.render();
     },1);
 
     return (
-        <LayerContext.Provider value={{ layers: layerStack }}>
+        <LayerContext.Provider value={{ addLayer }}>
             {children}
         </LayerContext.Provider>
     );
@@ -48,13 +51,13 @@ const LayerProvider = ({ children }) => {
 
 // Erstellen Sie den Hook
 const useLayer = (camera) => {
-    const { layers } = useContext(LayerContext);
+    const { addLayer } = useContext(LayerContext);
     const scene = useRef(new Scene().add(new AmbientLight(0xffffff, 3)));
 
     useEffect(() => {
         const layer = { scene: scene.current, camera};
-        layers.add(layer);
-        return () => { layers.delete(layer) }
+        addLayer(layers => new Set(layers.add(layer)));
+        return () => { addLayer(layers => new Set(layers.delete(layer))) }
     }, [camera]);
     
     return scene.current;
