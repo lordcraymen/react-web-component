@@ -83,7 +83,7 @@ const Layer = ({ children, opacity = 1 }) => {
 
 const Layer = ({ children, opacity = 1 }) => {
 
-  const layer = useLayer()
+  const layer = useLayer(opacity)
   return createPortal(children, layer)
 }
 

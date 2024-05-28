@@ -10,6 +10,7 @@ import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
 const CompositionShaderFactory = (layers = []) => {
     const shader = {
         uniforms: {
+            'tDiffuse': { value: null },
           // Create a uniform for each render target in the group
           ...layers.reduce((uniforms, target, index) => {
             uniforms[`tDiffuse${index}`] = { value: null };
@@ -19,23 +20,23 @@ const CompositionShaderFactory = (layers = []) => {
         },
         vertexShader: CopyShader.vertexShader,
         fragmentShader: `
+          uniform sampler2D tDiffuse;
           ${layers.map((_, index) => `uniform sampler2D tDiffuse${index};`).join('\n')}
           ${layers.map((_, index) => `uniform float tAlpha${index};`).join('\n')}
           varying vec2 vUv;
           void main() {
-            vec4 color = texture2D(tDiffuse0, vUv);
-            ${layers.map((_, index) => `color = mix(color, texture2D(tDiffuse${index+1}, vUv), texture2D(tDiffuse${index+1}, vUv).a * tAlpha${index+1} );`).join('\n')}
+            vec4 color = texture2D(tDiffuse, vUv);
+            ${layers.map((_, index) => `color = mix(color, texture2D(tDiffuse${index}, vUv), texture2D(tDiffuse${index}, vUv).a * tAlpha${index} );`).join('\n')}
             gl_FragColor = color;
           }
         `
       }
-      console.log(JSON.stringify(shader));
     return new ShaderPass(shader);
 }
 
 // Erstellen Sie den ComposerContext
 
-type Layer = {scene:Scene,camera?:Camera};
+type Layer = {scene:Scene,opacity:1};
 
 
 const LayerContext = createContext<{ setLayers: React.Dispatch<React.SetStateAction<Set<Layer>>> }>({} as any);
@@ -47,7 +48,7 @@ const LayerProvider = ({ children }) => {
     const scene = useThree(state => state.scene);
     const camera = useThree(state => state.camera);
 
-    const [layerStack, setLayers] = useState<Set<{scene:Scene,camera?:Camera}>>(new Set())
+    const [layerStack, setLayers] = useState<Set<Layer>>(new Set())
 
     const Composer = useMemo(() => { 
         const Composer = new EffectComposer(gl); 
@@ -71,15 +72,17 @@ const LayerProvider = ({ children }) => {
             Composer.removePass(shaderPass) }; 
     }, [layerStack,shaderPass,Composer,scene,camera]);
 
-    useFrame(({gl, scene, camera}) => {
-        gl.setRenderTarget(renderTarget);
-        Array.from(layerStack).map((layer, index) => {
-            gl.render(layer.scene, layer.camera || camera);
-            console.log(`tDiffuse${index}`);
-            shaderPass.uniforms[`tDiffuse${index}`].value = renderTarget.texture;
-            shaderPass.uniforms[`tAlpha${index}`].value = 0;
-        });
-        gl.setRenderTarget(null);
+    useFrame(({gl, camera}) => {
+        if(layerStack.size !== 0) {
+            gl.setRenderTarget(renderTarget);
+            let index = 0
+            layerStack.forEach(layer => {
+                gl.render(layer.scene, camera);
+                shaderPass.uniforms[`tDiffuse${index}`].value = renderTarget.texture;
+                shaderPass.uniforms[`tAlpha${index}`].value = layer.opacity || 1;
+            });
+            gl.setRenderTarget(null);
+        }
         Composer.render();
     },1);
 
@@ -91,17 +94,17 @@ const LayerProvider = ({ children }) => {
 };
 
 // Erstellen Sie den Hook
-const useLayer = (camera) => {
+const useLayer = (opacity) => {
     const { setLayers } = useContext(LayerContext);
     const scene = useRef(new Scene().add(new AmbientLight(0xffffff, 3)));
 
     useEffect(() => {
-        const layer = { scene: scene.current, camera };
+        const layer = { scene: scene.current, opacity };
         setLayers(layers => new Set((layers.add(layer),layers)));
         return () => {
             setLayers(layers => new Set((layers.delete(layer),layers)))
         };
-    }, [camera, setLayers]);
+    }, [opacity, setLayers]);
     
     return scene.current;
 };
