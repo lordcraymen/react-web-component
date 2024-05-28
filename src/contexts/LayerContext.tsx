@@ -5,7 +5,6 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { useFrame, useThree } from '@react-three/fiber';
 import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
-import { render } from 'react-dom';
 
 
 const CompositionShaderFactory = (layers = []) => {
@@ -37,7 +36,7 @@ const CompositionShaderFactory = (layers = []) => {
 
 // Erstellen Sie den ComposerContext
 
-type Layer = {scene:Scene,opacity:1};
+type Layer = {scene:Scene,opacity:1,renderTarget:WebGLRenderTarget};
 
 
 const LayerContext = createContext<{ setLayers: React.Dispatch<React.SetStateAction<Set<Layer>>> }>({} as any);
@@ -70,17 +69,14 @@ const LayerProvider = ({ children }) => {
             shaderPass.dispose(); }; 
     }, [shaderPass,Composer]);
 
-    const renderTarget = new WebGLRenderTarget(size.width, size.height); 
-
     useFrame(({gl, camera, size}) => {
         if(layerStack.size > 0) {
-            renderTarget.setSize(size.width, size.height);
             let index = 0
             layerStack.forEach(layer => {
-                
-                gl.setRenderTarget(renderTarget);
+                layer.renderTarget.setSize(size.width, size.height);
+                gl.setRenderTarget(layer.renderTarget);
                 gl.render(layer.scene, camera);
-                shaderPass.uniforms[`tDiffuse${index}`] && (shaderPass.uniforms[`tDiffuse${index}`].value = renderTarget.texture); 
+                shaderPass.uniforms[`tDiffuse${index}`] && (shaderPass.uniforms[`tDiffuse${index}`].value = layer.renderTarget.texture); 
                 shaderPass.uniforms[`tAlpha${index}`] && (shaderPass.uniforms[`tAlpha${index}`].value = layer.opacity || 1);
                 index++;
             });
@@ -100,12 +96,14 @@ const LayerProvider = ({ children }) => {
 const useLayer = (opacity) => {
     const { setLayers } = useContext(LayerContext);
     const scene = useRef(new Scene().add(new AmbientLight(0xffffff, 3)));
-
+    
     useEffect(() => {
-        const layer = { scene: scene.current, opacity };
+        const renderTarget = new WebGLRenderTarget(0, 0);
+        const layer = { scene: scene.current, opacity, renderTarget };
         setLayers(layers => new Set((layers.add(layer),layers)));
         return () => {
             setLayers(layers => new Set((layers.delete(layer),layers)))
+            renderTarget.dispose();
         };
     }, [opacity, setLayers]);
     
