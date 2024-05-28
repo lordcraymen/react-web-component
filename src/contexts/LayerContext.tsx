@@ -65,20 +65,25 @@ const LayerProvider = ({ children }) => {
 
     useEffect(() => {
         const firstPass = new RenderPass(scene,camera);
-        firstPass.clearDepth = false;
-        firstPass.renderToScreen = false;
+       firstPass.clearDepth = false;
+       firstPass.renderToScreen = false;
         Composer.addPass(firstPass);
         Composer.addPass(shaderPass);
-        return () => { Composer.passes = [] }; 
+        return () => { 
+            Composer.removePass(firstPass)
+            Composer.removePass(shaderPass) }; 
     }, [layerStack,shaderPass,Composer,scene,camera]);
 
-    useFrame(({gl}) => {
+    useFrame(({gl, scene, camera}) => {
         gl.setRenderTarget(renderTarget);
+        gl.render(scene, camera);
+        shaderPass.uniforms[`tDiffuse`].value = renderTarget.texture;
+        shaderPass.uniforms[`tAlpha`].value = 1.0;
         Array.from(layerStack).map((layer, index) => {
             gl.render(layer.scene, layer.camera || camera);
             console.log(`tDiffuse${index}`);
             shaderPass.uniforms[`tDiffuse${index}`].value = renderTarget.texture;
-            shaderPass.uniforms[`tAlpha${index}`].value = 0.5;
+            shaderPass.uniforms[`tAlpha${index}`].value = 0;
         });
         gl.setRenderTarget(null);
         Composer.render();
