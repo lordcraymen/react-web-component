@@ -20,7 +20,7 @@ const CompositionShaderFactory = (layers = []) => {
         vertexShader: CopyShader.vertexShader,
         fragmentShader: `
           uniform sampler2D tDiffuse;
-          ${layers.map((_, index) => `uniform sampler2D t${index};`).join('\n')}
+          ${layers.map((_, index) => `uniform sampler2D tDiffuse${index};`).join('\n')}
           varying vec2 vUv;
           void main() {
             vec4 color = texture2D(tDiffuse, vUv);
