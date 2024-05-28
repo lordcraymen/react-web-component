@@ -53,8 +53,11 @@ const LayerProvider = ({ children }) => {
     const Composer = useMemo(() => { 
         const Composer = new EffectComposer(gl); 
         Composer.setSize(size.width,size.height); 
+        const basePass = new RenderPass(scene,camera);
+        basePass.clearDepth = false;
+        Composer.addPass(basePass);
         return Composer },
-    [gl,size]);
+    [gl,size, scene, camera]);
 
     const shaderPass = useMemo(() => CompositionShaderFactory(Array.from(layerStack.values())),[layerStack])
     shaderPass.renderToScreen = true;
@@ -62,24 +65,21 @@ const LayerProvider = ({ children }) => {
     const renderTarget = useMemo(() => new WebGLRenderTarget(size.width, size.height),[size])
 
     useEffect(() => {
-        const firstPass = new RenderPass(scene,camera);
-       firstPass.clearDepth = false;
-       firstPass.renderToScreen = false;
-        Composer.addPass(firstPass);
         Composer.addPass(shaderPass);
         return () => { 
-            Composer.removePass(firstPass)
             Composer.removePass(shaderPass) }; 
-    }, [layerStack,shaderPass,Composer,scene,camera]);
+    }, [shaderPass,Composer]);
 
     useFrame(({gl, camera}) => {
-        if(layerStack.size !== 0) {
+        if(layerStack.size > 0) {
             gl.setRenderTarget(renderTarget);
             let index = 0
             layerStack.forEach(layer => {
                 gl.render(layer.scene, camera);
-                shaderPass.uniforms[`tDiffuse${index}`].value = renderTarget.texture;
-                shaderPass.uniforms[`tAlpha${index}`].value = layer.opacity || 1;
+                console.log(shaderPass.uniforms, index)
+                shaderPass.uniforms[`tDiffuse${index}`] && (shaderPass.uniforms[`tDiffuse${index}`].value = renderTarget.texture); 
+                shaderPass.uniforms[`tAlpha${index}`] && (shaderPass.uniforms[`tAlpha${index}`].value = layer.opacity || 1);
+                index++;
             });
             gl.setRenderTarget(null);
         }
