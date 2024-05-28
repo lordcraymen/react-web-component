@@ -11,9 +11,11 @@ const CompositionShaderFactory = (layers = []) => {
     const shader = {
         uniforms: {
           tDiffuse: { value: null },
+          tAlpha: { value: 0.0 },
           // Create a uniform for each render target in the group
           ...layers.reduce((uniforms, target, index) => {
             uniforms[`tDiffuse${index}`] = { value: null };
+            uniforms[`tAlpha${index}`] = { value: 0.0 };
             return uniforms;
           }, {})
         },
@@ -21,10 +23,11 @@ const CompositionShaderFactory = (layers = []) => {
         fragmentShader: `
           uniform sampler2D tDiffuse;
           ${layers.map((_, index) => `uniform sampler2D tDiffuse${index};`).join('\n')}
+          ${layers.map((_, index) => `uniform float tAlpha${index};`).join('\n')}
           varying vec2 vUv;
           void main() {
             vec4 color = texture2D(tDiffuse, vUv);
-            ${layers.map((_, index) => `color = mix(color, texture2D(tDiffuse${index}, vUv), texture2D(tDiffuse${index}, vUv).a);`).join('\n')}
+            ${layers.map((_, index) => `color = mix(color, texture2D(tDiffuse${index}, vUv), texture2D(tDiffuse${index}, vUv).a * tAlpha${index} );`).join('\n')}
             gl_FragColor = color;
           }
         `
@@ -56,7 +59,7 @@ const LayerProvider = ({ children }) => {
     [gl,size]);
 
     const shaderPass = useMemo(() => CompositionShaderFactory(Array.from(layerStack.values())),[layerStack])
-    shaderPass.renderToScreen = false;
+    shaderPass.renderToScreen = true;
 
     const renderTarget = useMemo(() => new WebGL3DRenderTarget(size.width, size.height),[size])
 
@@ -71,10 +74,12 @@ const LayerProvider = ({ children }) => {
 
     useFrame(({gl}) => {
         gl.setRenderTarget(renderTarget);
-        layerStack.forEach((layer,index) => {
-            gl.render(layer.scene,layer.camera || camera);
-            //shaderPass.uniforms[`tDiffuse${index}`].value = renderTarget.texture;
-        })
+        Array.from(layerStack).map((layer, index) => {
+            gl.render(layer.scene, layer.camera || camera);
+            console.log(`tDiffuse${index}`);
+            shaderPass.uniforms[`tDiffuse${index}`].value = renderTarget.texture;
+            shaderPass.uniforms[`tAlpha${index}`].value = 0.5;
+        });
         gl.setRenderTarget(null);
         Composer.render();
     },1);
