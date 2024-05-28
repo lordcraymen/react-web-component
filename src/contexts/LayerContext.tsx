@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useMemo, useState } from 'react';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-import { Scene, Camera, AmbientLight, WebGL3DRenderTarget } from 'three';
+import { Scene, Camera, AmbientLight, WebGLRenderTarget } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { useFrame, useThree } from '@react-three/fiber';
@@ -10,8 +10,6 @@ import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
 const CompositionShaderFactory = (layers = []) => {
     const shader = {
         uniforms: {
-          tDiffuse: { value: null },
-          tAlpha: { value: 0.0 },
           // Create a uniform for each render target in the group
           ...layers.reduce((uniforms, target, index) => {
             uniforms[`tDiffuse${index}`] = { value: null };
@@ -21,13 +19,12 @@ const CompositionShaderFactory = (layers = []) => {
         },
         vertexShader: CopyShader.vertexShader,
         fragmentShader: `
-          uniform sampler2D tDiffuse;
           ${layers.map((_, index) => `uniform sampler2D tDiffuse${index};`).join('\n')}
           ${layers.map((_, index) => `uniform float tAlpha${index};`).join('\n')}
           varying vec2 vUv;
           void main() {
-            vec4 color = texture2D(tDiffuse, vUv);
-            ${layers.map((_, index) => `color = mix(color, texture2D(tDiffuse${index}, vUv), texture2D(tDiffuse${index}, vUv).a * tAlpha${index} );`).join('\n')}
+            vec4 color = texture2D(tDiffuse0, vUv);
+            ${layers.map((_, index) => `color = mix(color, texture2D(tDiffuse${index+1}, vUv), texture2D(tDiffuse${index+1}, vUv).a * tAlpha${index+1} );`).join('\n')}
             gl_FragColor = color;
           }
         `
@@ -61,7 +58,7 @@ const LayerProvider = ({ children }) => {
     const shaderPass = useMemo(() => CompositionShaderFactory(Array.from(layerStack.values())),[layerStack])
     shaderPass.renderToScreen = true;
 
-    const renderTarget = useMemo(() => new WebGL3DRenderTarget(size.width, size.height),[size])
+    const renderTarget = useMemo(() => new WebGLRenderTarget(size.width, size.height),[size])
 
     useEffect(() => {
         const firstPass = new RenderPass(scene,camera);
@@ -76,9 +73,6 @@ const LayerProvider = ({ children }) => {
 
     useFrame(({gl, scene, camera}) => {
         gl.setRenderTarget(renderTarget);
-        gl.render(scene, camera);
-        shaderPass.uniforms[`tDiffuse`].value = renderTarget.texture;
-        shaderPass.uniforms[`tAlpha`].value = 1.0;
         Array.from(layerStack).map((layer, index) => {
             gl.render(layer.scene, layer.camera || camera);
             console.log(`tDiffuse${index}`);
