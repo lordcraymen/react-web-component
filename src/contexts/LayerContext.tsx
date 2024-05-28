@@ -5,6 +5,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { useFrame, useThree } from '@react-three/fiber';
 import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
+import { render } from 'react-dom';
 
 
 const CompositionShaderFactory = (layers = []) => {
@@ -62,21 +63,23 @@ const LayerProvider = ({ children }) => {
     const shaderPass = useMemo(() => CompositionShaderFactory(Array.from(layerStack.values())),[layerStack])
     shaderPass.renderToScreen = true;
 
-    const renderTarget = useMemo(() => new WebGLRenderTarget(size.width, size.height),[size])
-
     useEffect(() => {
         Composer.addPass(shaderPass);
         return () => { 
-            Composer.removePass(shaderPass) }; 
+            Composer.removePass(shaderPass)
+            shaderPass.dispose(); }; 
     }, [shaderPass,Composer]);
 
-    useFrame(({gl, camera}) => {
+    const renderTarget = new WebGLRenderTarget(size.width, size.height); 
+
+    useFrame(({gl, camera, size}) => {
         if(layerStack.size > 0) {
-            gl.setRenderTarget(renderTarget);
+            renderTarget.setSize(size.width, size.height);
             let index = 0
             layerStack.forEach(layer => {
+                
+                gl.setRenderTarget(renderTarget);
                 gl.render(layer.scene, camera);
-                console.log(shaderPass.uniforms, index)
                 shaderPass.uniforms[`tDiffuse${index}`] && (shaderPass.uniforms[`tDiffuse${index}`].value = renderTarget.texture); 
                 shaderPass.uniforms[`tAlpha${index}`] && (shaderPass.uniforms[`tAlpha${index}`].value = layer.opacity || 1);
                 index++;
