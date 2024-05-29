@@ -5,7 +5,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { useFrame, useThree } from '@react-three/fiber';
 import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
-import { useRenderTraget } from '../hooks/useRenderTarget';
+import { useRenderTarget } from '../hooks/useRenderTarget';
 
 
 const CompositionShaderFactory = (layers = []) => {
@@ -94,16 +94,16 @@ const LayerProvider = ({ children }) => {
 };
 
 // Erstellen Sie den Hook
-const useLayer = (options) => {
+const useLayer = ({opacity}) => {
     const { setLayers } = useContext(LayerContext);
     const scene = useRef(new Scene().add(new AmbientLight(0xffffff, 3))).current;
-    const renderTarget = useRenderTraget()
+    const renderTarget = useRenderTarget()
     
     useEffect(() => {
-        const layer = { ...options, scene, renderTarget };
+        const layer = { opacity, scene, renderTarget };
         setLayers(layers => new Set((layers.add(layer),layers)));
         return () => { setLayers(layers => new Set((layers.delete(layer),layers))) };
-    }, [options.opacity, setLayers, renderTarget, scene]);
+    }, [opacity, setLayers, renderTarget, scene]);
     
     return scene;
 };
