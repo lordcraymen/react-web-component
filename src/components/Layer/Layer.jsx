@@ -81,9 +81,9 @@ const Layer = ({ children, opacity = 1 }) => {
 
 */
 
-const Layer = ({ children, opacity = 1 }) => {
+const Layer = ({ children, opacity, mode="3D" }) => {
 
-  const layer = useLayer({opacity})
+  const layer = useLayer({opacity,mode})
   return createPortal(children, layer)
 }
 

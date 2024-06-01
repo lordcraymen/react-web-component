@@ -6,6 +6,7 @@ import { Zoom } from '../Zoom';
 import { Pan } from '../Pan';
 import { prefersreducedMotion } from '../../helpers/checkReducedMotion';
 import { LayerProvider } from '../../contexts/LayerContext';
+import { RenderGroup } from "../RenderGroup"
 
 const Box = ({ focus, ...props }) => {
   const ref = useRef();
@@ -73,7 +74,7 @@ const Scene = ({ children }) => {
               </GlobalBackground>
           </Rotator>
           </Pan>
-          {children}
+          <RenderGroup>{children}</RenderGroup>
       </LayerProvider>
     </Canvas>
   );
