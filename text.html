@@ -2,191 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Custom Transparency</title>
+    <title>Three.js Boilerplate</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
     </style>
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script>
-        let scene, torusScene, camera, renderer, controls;
-        let cube, torus, sphere;
-        let sceneRenderTarget, torusRenderTarget, finalQuad;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
 
-        function init() {
-            scene = new THREE.Scene();
-            torusScene = new THREE.Scene();
+// Save the original add and remove methods
+const originalAdd = THREE.Object3D.prototype.add;
+const originalRemove = THREE.Object3D.prototype.remove;
 
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 10;
+// Override the add method
+THREE.Object3D.prototype.add = function (...objects) {
+  // Call the original add method
+  originalAdd.apply(this, objects);
+  
+  // Custom logic to apply the override material
+  if (this.overrideMaterial) {
+    this.applyOverrideMaterial(objects);
+  }
+};
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
+// Override the remove method
+THREE.Object3D.prototype.remove = function (...objects) {
+  // Custom logic to restore the original material
+  this.restoreOriginalMaterial(objects);
+  
+  // Call the original remove method
+  originalRemove.apply(this, objects);
+};
 
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-            // Create objects
-            const geometryCube = new THREE.BoxGeometry(2, 2, 2);
-            const geometryTorus = new THREE.TorusGeometry(1, 0.4, 16, 100);
-            const geometrySphere = new THREE.SphereGeometry(1, 32, 32);
+// Function to apply override material
+THREE.Object3D.prototype.applyOverrideMaterial = function (objects) {
+  objects.forEach((object) => {
+    if (object.isMesh) {
+      object.userData.originalMaterial = object.material;
+      object.material = this.overrideMaterial;
+    }
+    if (object.children.length > 0) {
+      this.applyOverrideMaterial(object.children);
+    }
+  });
+};
 
-            // Fully opaque materials for cube and sphere
-            const materialCube = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            const materialSphere = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+// Function to restore original material
+THREE.Group.prototype.restoreOriginalMaterial = function (objects) {
+  objects.forEach((object) => {
+    if (object.isMesh && object.userData.originalMaterial) {
+      object.material = object.userData.originalMaterial;
+      delete object.userData.originalMaterial;
+    }
+    if (object.children.length > 0) {
+      this.restoreOriginalMaterial(object.children);
+    }
+  });
+};
 
-            // Neutral transparent material for the first pass of the torus
-            const neutralMaterialTorus = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.5 });
 
-            // Final material for the torus
-            const finalMaterialTorus = new THREE.ShaderMaterial({
-                uniforms: {
-                    uAlpha: { value: 0.5 }
-                },
-                vertexShader: `
-                    varying vec2 vUv;
-                    void main() {
-                        vUv = uv;
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                    }
-                `,
-                fragmentShader: `
-                    uniform float uAlpha;
-                    varying vec2 vUv;
-                    void main() {
-                        vec4 color = vec4(1.0, 0.0, 0.0, 1.0);
-                        gl_FragColor = vec4(color.rgb, uAlpha);
-                    }
-                `,
-                transparent: true,
-                blending: THREE.NormalBlending,
-                depthTest: true,
-                depthWrite: false
-            });
 
-            cube = new THREE.Mesh(geometryCube, materialCube);
-            torus = new THREE.Mesh(geometryTorus, neutralMaterialTorus);
-            sphere = new THREE.Mesh(geometrySphere, materialSphere);
+// Example usage
+const scene = new THREE.Scene();
+const greenMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const blueMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
 
-            cube.position.x = -4;
-            torus.position.x = 0;
-            sphere.position.x = 4;
+const cube = new THREE.Mesh(new THREE.BoxGeometry(), greenMaterial);
+const torus = new THREE.Mesh(new THREE.TorusGeometry(5, 2, 16, 100), greenMaterial);
 
-            scene.add(cube);
-            scene.add(sphere);
+const group = new THREE.Group();
+group.overrideMaterial = blueMaterial;
+group.add(cube);
+scene.add(torus);
 
-            torusScene.add(torus);
+scene.add(group);
 
-            // Set up render targets
-            sceneRenderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                format: THREE.RGBAFormat,
-                type: THREE.FloatType,
-                depthBuffer: true
-            });
+// Render loop
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-            torusRenderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-                minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearFilter,
-                format: THREE.RGBAFormat,
-                type: THREE.FloatType,
-                depthBuffer: true
-            });
+camera.position.z = 20;
 
-            const finalVertexShader = `
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = vec4(position.xy, 0.0, 1.0);
-                }
-            `;
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
 
-            const finalFragmentShader = `
-                uniform sampler2D sceneTexture;
-                uniform sampler2D torusTexture;
-                uniform float uAlpha;
-                varying vec2 vUv;
+animate();
 
-                void main() {
-                    vec4 sceneColor = texture2D(sceneTexture, vUv);
-                    vec4 torusColor = texture2D(torusTexture, vUv);
 
-                    vec4 finalColor = mix(sceneColor, torusColor, uAlpha);
-
-                    gl_FragColor = finalColor;
-                }
-            `;
-
-            const finalMaterial = new THREE.ShaderMaterial({
-                uniforms: {
-                    sceneTexture: { value: sceneRenderTarget.texture },
-                    torusTexture: { value: torusRenderTarget.texture },
-                    uAlpha: { value: 0.5 }
-                },
-                vertexShader: finalVertexShader,
-                fragmentShader: finalFragmentShader,
-                depthTest: false,
-                depthWrite: false,
-                transparent: true,
-            });
-
-            const quadGeometry = new THREE.PlaneGeometry(2, 2);
-            finalQuad = new THREE.Mesh(quadGeometry, finalMaterial);
-
-            const postScene = new THREE.Scene();
-            postScene.add(finalQuad);
-
-            animate(postScene);
-        }
-
-        function animate(postScene) {
-            requestAnimationFrame(() => animate(postScene));
-
-            cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
-
-            torus.rotation.x += 0.01;
-            torus.rotation.y += 0.01;
-
-            sphere.rotation.x += 0.01;
-            sphere.rotation.y += 0.01;
-
-            controls.update();
-
-            // Render the scene (without torus) to sceneRenderTarget
-            renderer.setRenderTarget(sceneRenderTarget);
-            renderer.clear();
-            renderer.render(scene, camera);
-
-            // Render only the torus to torusRenderTarget with neutral material
-            torus.material = neutralMaterialTorus;
-            renderer.setRenderTarget(torusRenderTarget);
-            renderer.clear();
-            renderer.render(torusScene, camera);
-
-            // Adjust the torus material for final rendering
-            torus.material = finalMaterialTorus;
-
-            renderer.setRenderTarget(null);
-
-            // Render the final composite to the screen
-            renderer.render(postScene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            sceneRenderTarget.setSize(window.innerWidth, window.innerHeight);
-            torusRenderTarget.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        init();
-    </script>
+</script>
 </body>
 </html>

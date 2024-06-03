@@ -59,6 +59,20 @@ const Camera = () => {
   return <group ref={groupRef} />
 };
 
+const MyCanvas = () => {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    const originalRender = gl.render;
+    gl.render = (...args) => {
+      console.log('rendered');
+      originalRender.apply(gl, args);
+    };
+  }, [gl]);
+
+  return null
+};
+
 const Scene = ({ children }) => {
   return (
     <Canvas frameloop="demand">

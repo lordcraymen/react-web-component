@@ -1,6 +1,7 @@
-import { useThree } from "@react-three/fiber"
-import { useCallback, useMemo } from "react"
-import { Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, RGBAFormat, ShaderMaterial } from "three"
+import { useThree, useFrame } from "@react-three/fiber"
+import { Depth } from "@react-three/postprocessing"
+import { useCallback, useMemo, useRef } from "react"
+import { Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, RGBAFormat, ShaderMaterial, DepthTexture } from "three"
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
 
 const DepthMaterial = new ShaderMaterial({
@@ -33,39 +34,37 @@ const TransparentShaderMaterial = new ShaderMaterial({
     depthFunc: 2
 })
 
+const BasicMaterial = new MeshBasicMaterial({
+    color: 0xff0000
+})
+
 
 const RenderGroup = ({children,opacity=1}) => {
-    
-    const size = useThree((state) => state.size)
-    const tempTarget = useMemo(()=> { 
-        const target = new WebGLRenderTarget( size.width, size.height, { format: RGBAFormat })
-        target.depthBuffer = true;
-        return target
-    },[size])
 
-    const onBeforeRenderProxy = useCallback((gl) => {
-        console.log('onBeforeRenderProxy')
-        gl.setRenderTarget(tempTarget);
-    },[])
-
-    const onBeforeRenderFinal = useCallback((scene) => {
-        console.log('onBeforeRenderFinal')
-        TransparentShaderMaterial.uniforms.tDiffuse.value = tempTarget.texture;
-        TransparentShaderMaterial.uniforms.opacity.value = opacity;
-        scene.overrideMaterial = new MeshBasicMaterial({color:0xff00ff});
-    },[])
-
-    const onAfterRender = useCallback((gl,scene) => {
-        scene.overrideMaterial = null;
-        gl.setRenderTarget(null);
-    },[])
+    const size = useThree(({ size }) => size)
+    const rendertarget = useMemo(() => new WebGLRenderTarget(size.width, size.height, {   
+        format: RGBAFormat,
+        depthBuffer: true,
+        depthTexture: new DepthTexture(size.width, size.height)
+    }), [size])
 
     
+    useFrame(({ gl, scene, camera }) => {
+        //gl.autoClear = false
+        //gl.clear()
+        scene.overrideMaterial = BasicMaterial
+        gl.setRenderTarget(rendertarget)
+        gl.render(scene, camera)
+        gl.setRenderTarget(null)
+        gl.render(scene, camera)
+        scene.overrideMaterial = null
+        console.log("rendered")
+    })
 
-    return <>
-            <mesh onBeforeRender={onBeforeRenderProxy} onAfterRender={onAfterRender}>{children}</mesh>
-            <mesh onBeforeRender={onBeforeRenderFinal} onAfterRender={onAfterRender}>{children}</mesh>
-        </>
+    return <mesh 
+                onBeforeRender={()=> console.log("onBeforerender")}
+                onAfterRender={()=> console.log("onAfterRender")}
+            >{children}</mesh>
 
 }
 export { RenderGroup }
