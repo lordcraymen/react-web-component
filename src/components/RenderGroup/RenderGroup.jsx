@@ -1,28 +1,71 @@
+import { useThree } from "@react-three/fiber"
 import { useCallback, useMemo } from "react"
-import { Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, RGBAFormat } from "three"
+import { Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, RGBAFormat, ShaderMaterial } from "three"
+import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
 
+const DepthMaterial = new ShaderMaterial({
+    uniforms: {
+    },
+    vertexShader: CopyShader.vertexShader,
+    fragmentShader: ` void main() {}`,
+    transparent: false,
+    depthTest: false,
+    depthWrite: false,
+})
+
+const TransparentShaderMaterial = new ShaderMaterial({
+    uniforms: {
+        tDiffuse: { value: null },
+        opacity: { value: 1 }
+    },
+    vertexShader: CopyShader.vertexShader,
+    fragmentShader: `
+    uniform float opacity;
+    uniform sampler2D tDiffuse;
+    void main() {
+        //vec4 texel = texture2D(tDiffuse, gl_FragCoord.xy / resolution.xy);
+        //gl_FragColor = vec4(texel.rgb, texel.a * opacity);
+    }
+    `,
+    transparent: false,
+    depthTest: true,
+    depthWrite: true,
+    depthFunc: 2
+})
 
 
 const RenderGroup = ({children,opacity=1}) => {
     
-    const {tempScene,tempTarget} = useMemo(()=> ({   tempScene: new Scene(), tempTarget: new WebGLRenderTarget( 1, 1, { format: RGBAFormat })}),[])
+    const size = useThree((state) => state.size)
+    const tempTarget = useMemo(()=> { 
+        const target = new WebGLRenderTarget( size.width, size.height, { format: RGBAFormat })
+        target.depthBuffer = true;
+        return target
+    },[size])
 
-    const onBeforeRender = useCallback((gl,scene,camera,element) => {
-        //console.log(gl,scene,camera)
-        tempTarget.setSize( gl.domElement.width, gl.domElement.height );
+    const onBeforeRenderProxy = useCallback((gl) => {
+        console.log('onBeforeRenderProxy')
         gl.setRenderTarget(tempTarget);
-        const tmpParent = element.parent
-        tempScene.attach(element)
-        tempScene.overrideMaterial = new MeshBasicMaterial({color: 0xff00ff});
-        gl.render(tempScene, camera);
-        gl.setRenderTarget(null);
-        parent.attach(element);
+    },[])
 
+    const onBeforeRenderFinal = useCallback((scene) => {
+        console.log('onBeforeRenderFinal')
+        TransparentShaderMaterial.uniforms.tDiffuse.value = tempTarget.texture;
+        TransparentShaderMaterial.uniforms.opacity.value = opacity;
+        scene.overrideMaterial = new MeshBasicMaterial({color:0xff00ff});
+    },[])
+
+    const onAfterRender = useCallback((gl,scene) => {
+        scene.overrideMaterial = null;
+        gl.setRenderTarget(null);
     },[])
 
     
 
-    return <mesh {...{onBeforeRender}}>{children}</mesh>
+    return <>
+            <mesh onBeforeRender={onBeforeRenderProxy} onAfterRender={onAfterRender}>{children}</mesh>
+            <mesh onBeforeRender={onBeforeRenderFinal} onAfterRender={onAfterRender}>{children}</mesh>
+        </>
 
 }
 export { RenderGroup }
