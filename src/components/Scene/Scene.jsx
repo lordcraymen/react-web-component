@@ -1,12 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useThree} from '@react-three/fiber';
-import { BackSide } from 'three';
+import { BackSide} from 'three';
 import { Rotator } from '../Rotator/Rotator';
 import { Zoom } from '../Zoom';
 import { Pan } from '../Pan';
 import { prefersreducedMotion } from '../../helpers/checkReducedMotion';
 import { LayerProvider } from '../../contexts/LayerContext';
 import { RenderGroup } from "../RenderGroup"
+
+/*
+// Save the original renderObject function
+const originalRenderObject = WebGLRenderer.prototype.renderObject;
+
+// Override the renderObject function
+WebGLRenderer.prototype.renderObject = function(object, scene, camera, geometry, material, group) {
+    const overrideMaterial = scene.overrideMaterial;
+
+    // Use overrideMaterial if it is set
+    if (overrideMaterial !== null) {
+        material = overrideMaterial;
+    }
+
+    // Call the original renderObject function with the potentially overridden material
+    originalRenderObject.call(this, object, scene, camera, geometry, material, group);
+    console.log("rendered ", object)
+};
+*/
 
 const Box = ({ focus, ...props }) => {
   const ref = useRef();
@@ -28,6 +47,7 @@ const Box = ({ focus, ...props }) => {
     </mesh>
   );
 };
+
 
 const Light = () => <ambientLight intensity={Math.PI / 2} />
 
@@ -60,22 +80,28 @@ const Camera = () => {
 };
 
 const MyCanvas = () => {
-  const { gl } = useThree();
+  const gl = useThree(state => state.gl);
+  const mainscene = useThree(state => state.scene);
 
   useEffect(() => {
-    const originalRender = gl.render;
-    gl.render = (...args) => {
-      console.log('rendered');
-      originalRender.apply(gl, args);
-    };
-  }, [gl]);
+      console.log('gl', gl);
+      
+      const originalRenderObject = gl.renderBufferDirect;
+      gl.renderBufferDirect = ( camera, scene, geometry, material, object, group ) => {
+        console.log(mainscene.overrideMaterial);
+        originalRenderObject( camera, scene, geometry, mainscene.overrideMaterial || material, object, group );
+      };
+      return () => { gl.renderObject = originalRenderObject };
+      
+  }, [gl, mainscene]);
 
-  return null
+  return null;
 };
 
 const Scene = ({ children }) => {
   return (
     <Canvas frameloop="demand">
+    <MyCanvas />
       <LayerProvider>
         <ambientLight intensity={Math.PI / 2} />
           <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />

@@ -1,8 +1,9 @@
 import { useThree, useFrame } from "@react-three/fiber"
 import { Depth } from "@react-three/postprocessing"
 import { useCallback, useMemo, useRef } from "react"
-import { Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, RGBAFormat, ShaderMaterial, DepthTexture } from "three"
+import { Mesh, Scene, MeshBasicMaterial, WebGLRenderer, WebGLRenderTarget, RGBAFormat, ShaderMaterial, DepthTexture } from "three"
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
+
 
 const DepthMaterial = new ShaderMaterial({
     uniforms: {
@@ -48,22 +49,10 @@ const RenderGroup = ({children,opacity=1}) => {
         depthTexture: new DepthTexture(size.width, size.height)
     }), [size])
 
-    
-    useFrame(({ gl, scene, camera }) => {
-        //gl.autoClear = false
-        //gl.clear()
-        scene.overrideMaterial = BasicMaterial
-        gl.setRenderTarget(rendertarget)
-        gl.render(scene, camera)
-        gl.setRenderTarget(null)
-        gl.render(scene, camera)
-        scene.overrideMaterial = null
-        console.log("rendered")
-    })
-
     return <mesh 
-                onBeforeRender={()=> console.log("onBeforerender")}
-                onAfterRender={()=> console.log("onAfterRender")}
+                onBeforeRender={(_,scene)=> { scene.overrideMaterial = BasicMaterial;
+                console.log("onBeforerender")}}
+                onAfterRender={(_,scene)=> { scene.overrideMaterial = null; console.log("onAfterRender") }}
             >{children}</mesh>
 
 }
