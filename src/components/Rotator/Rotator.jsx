@@ -28,7 +28,6 @@ const Rotator = ({ children }) => {
   };
 
   const handlePointerMove = (event) => {
-
       const pointerDelta = new Vector2(
         event.clientX - pointerStart.current.x,
         event.clientY - pointerStart.current.y

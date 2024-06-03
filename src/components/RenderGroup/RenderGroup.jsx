@@ -1,17 +1,28 @@
-import { useCallback } from "react"
-import { Mesh } from "three"
+import { useCallback, useMemo } from "react"
+import { Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, RGBAFormat } from "three"
 
-const RenderGroup = ({children}) => {
 
-    let el = undefined
-    const onMount = useCallback((element) => {
-        if(!element) { console.log("unmounting",el); return}
-        el = element
-        console.log("mounting",el.onBeforeRender)
-        el.onBeforeRender = () => { console.log("rendering")}
+
+const RenderGroup = ({children,opacity=1}) => {
+    
+    const {tempScene,tempTarget} = useMemo(()=> ({   tempScene: new Scene(), tempTarget: new WebGLRenderTarget( 1, 1, { format: RGBAFormat })}),[])
+
+    const onBeforeRender = useCallback((gl,scene,camera,element) => {
+        //console.log(gl,scene,camera)
+        tempTarget.setSize( gl.domElement.width, gl.domElement.height );
+        gl.setRenderTarget(tempTarget);
+        const tmpParent = element.parent
+        tempScene.attach(element)
+        tempScene.overrideMaterial = new MeshBasicMaterial({color: 0xff00ff});
+        gl.render(tempScene, camera);
+        gl.setRenderTarget(null);
+        parent.attach(element);
+
     },[])
 
-    return <mesh ref={onMount}>{children}</mesh>
+    
+
+    return <mesh {...{onBeforeRender}}>{children}</mesh>
 
 }
 export { RenderGroup }

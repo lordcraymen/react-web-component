@@ -7,6 +7,7 @@ import { Model } from "./components/Model";
 import { Layer } from "./components/Layer";
 import { XR } from '@react-three/xr';
 import { Rotator } from "./components/Rotator";
+import { RenderGroup } from "./components/RenderGroup";
 
 import { createTestWebComponent } from "./classes/ComponentTest";
 
@@ -189,6 +190,18 @@ const GroupComponent = createTestWebComponent(
             }
         })
 
+
+        const RenderGroupComponent = createTestWebComponent(
+        {
+            "opacity": 1.0,
+        },
+        {
+            onUpdate: ({ instanceID, opacity, children }) => {
+                return <RenderGroup key={instanceID} opacity={Number(opacity)} >{children}</RenderGroup>
+            }
+        })
+
+defineCustomElement("mc-rendergroup", RenderGroupComponent);
 defineCustomElement("mc-rotator", RotatorComponent);
 defineCustomElement("mc-poi", POIComponent);
 defineCustomElement("mc-box", BoxComponent);
