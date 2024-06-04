@@ -29,10 +29,10 @@ const TransparentShaderMaterial = new ShaderMaterial({
         //gl_FragColor = vec4(texel.rgb, texel.a * opacity);
     }
     `,
-    transparent: false,
+    transparent: true,
     depthTest: true,
     depthWrite: true,
-    depthFunc: 2
+    depthFunc: 1
 })
 
 
@@ -43,8 +43,13 @@ const RenderGroup = ({ children, opacity }) => {
     if (groupRef.current) {
         groupRef.current.visible = (opacity !== 0)
         if(!groupRef.current.visible) return
-        const BasicMaterial = new MeshBasicMaterial({ color: 0xff0000, opacity, transparent: opacity !== 1 })
-        groupRef.current.traverse(object => object.overrideMaterial = BasicMaterial);
+        const BasicMaterial = new MeshBasicMaterial({ color: 0xff0000, opacity, transparent: opacity !== 1, depthFunc: 2})
+        groupRef.current.traverse(object => { object.overrideMaterial = BasicMaterial;
+            if(object.material) {
+                object.material.transparent = BasicMaterial.transparent;
+                object.material.opacity = 1;
+                object.material.depthFunc = 1
+            } });
     }
   }, [children, opacity]);
 

@@ -102,6 +102,8 @@ const Scene = ({ children }) => {
     <Canvas onCreated={({ gl }) => {
       const originalRenderBufferDirect = gl.renderBufferDirect;
 
+      console.log(gl.renderObject)
+
       gl.renderBufferDirect = function (camera, fog, geometry, material, object, group) {
         console.log(object.overrideMaterial)
         originalRenderBufferDirect.call(this, camera, fog, geometry, object.overrideMaterial || material, object, group);
