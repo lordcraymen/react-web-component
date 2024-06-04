@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useThree} from '@react-three/fiber';
-import { BackSide } from 'three';
+import { BackSide, Object3D, MeshBasicMaterial } from 'three';
 import { Rotator } from '../Rotator/Rotator';
 import { Zoom } from '../Zoom';
 import { Pan } from '../Pan';
 import { prefersreducedMotion } from '../../helpers/checkReducedMotion';
 import { LayerProvider } from '../../contexts/LayerContext';
 import { RenderGroup } from "../RenderGroup"
+import { color } from 'three/examples/jsm/nodes/shadernode/ShaderNode';
 
 const Box = ({ focus, ...props }) => {
   const ref = useRef();
@@ -59,23 +60,29 @@ const Camera = () => {
   return <group ref={groupRef} />
 };
 
-const MyCanvas = () => {
+
+Object3D.prototype.overrideMaterial = null;
+
+const LogThree = () => {
   const { gl } = useThree();
+  console.log(gl);
+  return null;
+}
 
-  useEffect(() => {
-    const originalRender = gl.render;
-    gl.render = (...args) => {
-      console.log('rendered');
-      originalRender.apply(gl, args);
-    };
-  }, [gl]);
+const BasicMaterial = new MeshBasicMaterial({color: 0xff0000});
 
-  return null
-};
 
 const Scene = ({ children }) => {
   return (
-    <Canvas frameloop="demand">
+    <Canvas onCreated={({ gl }) => {
+      const originalRenderBufferDirect = gl.renderBufferDirect;
+
+      gl.renderBufferDirect = function (camera, fog, geometry, material, object, group) {
+        console.log(object.overrideMaterial)
+        originalRenderBufferDirect.call(this, camera, fog, geometry, object.overrideMaterial || material, object, group);
+      };
+    }} frameloop="demand" >
+      <LogThree />
       <LayerProvider>
         <ambientLight intensity={Math.PI / 2} />
           <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
