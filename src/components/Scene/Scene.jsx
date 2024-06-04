@@ -9,6 +9,25 @@ import { LayerProvider } from '../../contexts/LayerContext';
 import { RenderGroup } from "../RenderGroup"
 import { color } from 'three/examples/jsm/nodes/shadernode/ShaderNode';
 
+/*
+// Save the original renderObject function
+const originalRenderObject = WebGLRenderer.prototype.renderObject;
+
+// Override the renderObject function
+WebGLRenderer.prototype.renderObject = function(object, scene, camera, geometry, material, group) {
+    const overrideMaterial = scene.overrideMaterial;
+
+    // Use overrideMaterial if it is set
+    if (overrideMaterial !== null) {
+        material = overrideMaterial;
+    }
+
+    // Call the original renderObject function with the potentially overridden material
+    originalRenderObject.call(this, object, scene, camera, geometry, material, group);
+    console.log("rendered ", object)
+};
+*/
+
 const Box = ({ focus, ...props }) => {
   const ref = useRef();
   const [hovered, hover] = useState(false);
@@ -29,6 +48,7 @@ const Box = ({ focus, ...props }) => {
     </mesh>
   );
 };
+
 
 const Light = () => <ambientLight intensity={Math.PI / 2} />
 
