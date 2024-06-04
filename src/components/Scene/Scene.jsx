@@ -81,6 +81,7 @@ const Camera = () => {
 };
 
 
+
 Object3D.prototype.overrideMaterial = null;
 
 const LogThree = () => {
