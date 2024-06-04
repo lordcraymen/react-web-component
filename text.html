@@ -5,97 +5,43 @@
     <title>Three.js Boilerplate</title>
     <style>
         body { margin: 0; }
-        canvas { display: block; }
+        #canvas { width: 100%; height: 100% }
     </style>
+    <script src="https://threejs.org/build/three.js"></script>
+    <script src="https://threejs.org/examples/jsm/loaders/GLTFLoader.js"></script>
 </head>
 <body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
+    <div id="canvas"></div>
+    <script>
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
 
-// Save the original add and remove methods
-const originalAdd = THREE.Object3D.prototype.add;
-const originalRemove = THREE.Object3D.prototype.remove;
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas').appendChild(renderer.domElement);
 
-// Override the add method
-THREE.Object3D.prototype.add = function (...objects) {
-  // Call the original add method
-  originalAdd.apply(this, objects);
-  
-  // Custom logic to apply the override material
-  if (this.overrideMaterial) {
-    this.applyOverrideMaterial(objects);
-  }
-};
+        var light = new THREE.AmbientLight(0x404040); // soft white light
+        scene.add(light);
 
-// Override the remove method
-THREE.Object3D.prototype.remove = function (...objects) {
-  // Custom logic to restore the original material
-  this.restoreOriginalMaterial(objects);
-  
-  // Call the original remove method
-  originalRemove.apply(this, objects);
-};
+        var pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
 
+        var loader = new THREE.GLTFLoader();
+        loader.load('src/assets/chawan.glb', function (gltf) {
+            scene.add(gltf.scene);
+        }, undefined, function (error) {
+            console.error(error);
+        });
 
-// Function to apply override material
-THREE.Object3D.prototype.applyOverrideMaterial = function (objects) {
-  objects.forEach((object) => {
-    if (object.isMesh) {
-      object.userData.originalMaterial = object.material;
-      object.material = this.overrideMaterial;
-    }
-    if (object.children.length > 0) {
-      this.applyOverrideMaterial(object.children);
-    }
-  });
-};
+        camera.position.z = 5;
 
-// Function to restore original material
-THREE.Group.prototype.restoreOriginalMaterial = function (objects) {
-  objects.forEach((object) => {
-    if (object.isMesh && object.userData.originalMaterial) {
-      object.material = object.userData.originalMaterial;
-      delete object.userData.originalMaterial;
-    }
-    if (object.children.length > 0) {
-      this.restoreOriginalMaterial(object.children);
-    }
-  });
-};
+        var animate = function () {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        };
 
-
-
-// Example usage
-const scene = new THREE.Scene();
-const greenMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-const blueMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-
-const cube = new THREE.Mesh(new THREE.BoxGeometry(), greenMaterial);
-const torus = new THREE.Mesh(new THREE.TorusGeometry(5, 2, 16, 100), greenMaterial);
-
-const group = new THREE.Group();
-group.overrideMaterial = blueMaterial;
-group.add(cube);
-scene.add(torus);
-
-scene.add(group);
-
-// Render loop
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-camera.position.z = 20;
-
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-}
-
-animate();
-
-
-</script>
+        animate();
+    </script>
 </body>
 </html>

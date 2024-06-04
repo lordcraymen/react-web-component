@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Canvas, useThree} from '@react-three/fiber';
+import { Canvas, useThree, useLoader} from '@react-three/fiber';
 import { BackSide, Object3D, MeshBasicMaterial } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { Rotator } from '../Rotator/Rotator';
 import { Zoom } from '../Zoom';
 import { Pan } from '../Pan';
@@ -80,7 +81,10 @@ const Camera = () => {
   return <group ref={groupRef} />
 };
 
-
+function Model({src,position,rotation,scale}) {
+  const gltf = useLoader(GLTFLoader, src);
+  return <primitive object={gltf.scene.clone()} {...{position,rotation,scale}}/>;
+}
 
 Object3D.prototype.overrideMaterial = null;
 
@@ -103,6 +107,9 @@ const Scene = ({ children }) => {
         originalRenderBufferDirect.call(this, camera, fog, geometry, object.overrideMaterial || material, object, group);
       };
     }} frameloop="demand" >
+      <RenderGroup opacity={0.2}>
+      <Model src="src/assets/example.glb" scale="10"/></RenderGroup>
+      <Model src="src/assets/example.glb" scale="5" position={[1,0,0]}/>
       <LogThree />
       <LayerProvider>
         <ambientLight intensity={Math.PI / 2} />
@@ -111,7 +118,7 @@ const Scene = ({ children }) => {
           <Rotator>
               <GlobalBackground>
                   <Camera />
-                  <Zoom speed={1}/>
+                  <Zoom speed={0.1}/>
               </GlobalBackground>
           </Rotator>
           {children}
