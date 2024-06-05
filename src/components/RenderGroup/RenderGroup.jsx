@@ -35,23 +35,30 @@ const TransparentShaderMaterial = new ShaderMaterial({
     depthFunc: 1
 })
 
-
 const RenderGroup = ({ children, opacity }) => {
+    const TransparencyMaterial = useRef(new MeshBasicMaterial({ color: 0xff0000, opacity, transparent: opacity !== 1 }))
+
+    useEffect(() => {
+        TransparencyMaterial.current.opacity = opacity
+        TransparencyMaterial.current.transparent = opacity !== 1
+    }, [opacity])
+
+    return <MaterialOverride material={TransparencyMaterial.current}>{children}</MaterialOverride>
+}
+
+
+const MaterialOverride = ({ children, material }) => {
   const groupRef = useRef();
 
   useEffect(() => {
     if (groupRef.current) {
-        groupRef.current.visible = (opacity !== 0)
-        if(!groupRef.current.visible) return
-        const BasicMaterial = new MeshBasicMaterial({ color: 0xff0000, opacity, transparent: opacity !== 1, depthFunc: 2})
-        groupRef.current.traverse(object => { object.overrideMaterial = BasicMaterial;
+        groupRef.current.traverse(object => { object.overrideMaterial = material
             if(object.material) {
-                object.material.transparent = BasicMaterial.transparent;
-                object.material.opacity = 1;
-                object.material.depthFunc = 1
+                object.material.transparent = material.transparent
+                object.material.depthFunc = material.depthFunc
             } });
     }
-  }, [children, opacity]);
+  }, [children, material]);
 
   return <group ref={groupRef}>{children}</group>;
 };
