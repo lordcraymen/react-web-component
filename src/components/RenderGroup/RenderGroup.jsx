@@ -1,7 +1,7 @@
 import { useThree, useFrame } from "@react-three/fiber"
 import { Depth } from "@react-three/postprocessing"
 import { useEffect, useRef } from "react"
-import { Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, RGBAFormat, ShaderMaterial, DepthTexture } from "three"
+import { Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, RGBAFormat, ShaderMaterial, DepthTexture, EqualDepth, LessEqualDepth, GreaterEqualDepth } from "three"
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
 
 
@@ -9,41 +9,25 @@ const DepthMaterial = new ShaderMaterial({
     uniforms: {
     },
     vertexShader: CopyShader.vertexShader,
-    fragmentShader: ` void main() {}`,
-    transparent: false,
-    depthTest: false,
-    depthWrite: false,
+    fragmentShader: `void main() { gl_FragColor = vec4(1.0, 1.0, 1.0, 0); }`,
+    transparent: true,
+    depthWrite: true,
+    opacity: 0
 })
 
-const TransparentShaderMaterial = new ShaderMaterial({
-    uniforms: {
-        tDiffuse: { value: null },
-        opacity: { value: 1 }
-    },
-    vertexShader: CopyShader.vertexShader,
-    fragmentShader: `
-    uniform float opacity;
-    uniform sampler2D tDiffuse;
-    void main() {
-        //vec4 texel = texture2D(tDiffuse, gl_FragCoord.xy / resolution.xy);
-        //gl_FragColor = vec4(texel.rgb, texel.a * opacity);
-    }
-    `,
-    transparent: true,
-    depthTest: true,
-    depthWrite: true,
-    depthFunc: 1
-})
 
 const RenderGroup = ({ children, opacity }) => {
-    const TransparencyMaterial = useRef(new MeshBasicMaterial({ color: 0xff0000, opacity, transparent: opacity !== 1 }))
+    const TransparencyMaterial = useRef(new MeshBasicMaterial({ color: 0xff0000, opacity, transparent: opacity !== 1, depthFunc: LessEqualDepth}))
 
     useEffect(() => {
         TransparencyMaterial.current.opacity = opacity
         TransparencyMaterial.current.transparent = opacity !== 1
     }, [opacity])
 
-    return <MaterialOverride material={TransparencyMaterial.current}>{children}</MaterialOverride>
+    return <>
+        <MaterialOverride material={DepthMaterial}>{children}</MaterialOverride>
+        <MaterialOverride material={TransparencyMaterial.current}>{children}</MaterialOverride>
+    </>
 }
 
 
