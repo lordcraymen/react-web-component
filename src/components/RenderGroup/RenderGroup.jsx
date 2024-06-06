@@ -5,39 +5,39 @@ import { UnsignedShortType, Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, R
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
 
 
-const DepthMaterial = new ShaderMaterial({
-    uniforms: {
-        diffuseTexture: { value: null },
-        depthTexture: { value: null },
-        opacity: { value: 1.0 }
-    },
-    vertexShader: CopyShader.vertexShader,
-    fragmentShader: `
-        uniform sampler2D diffuseTexture;
-        uniform sampler2D depthTexture;
-        uniform float opacity;
-        varying vec2 vUv;
-    
-        float readDepth(const in vec2 coord) {
-            float fragDepth = texture2D(depthTexture, coord).r;
-            return fragDepth;
-        }
-    
-        void main() {
-            float currentDepth = gl_FragCoord.z / gl_FragCoord.w;
-            float depthFromTexture = readDepth(gl_FragCoord.xy / vec2(textureSize(depthTexture, 0)));
-            float visibility = step(currentDepth, depthFromTexture);
-            if (visibility < 0.5) discard;
-            gl_FragColor = vec4(1.0, 1.0, 1.0, opacity); // Use the opacity passed to the shader
-    }
-    `,
-    transparent: true,
-    depthWrite: true,
-})
+
 
 
 const RenderGroup = ({ children, opacity }) => {
-    const TransparencyMaterial = useRef(new MeshBasicMaterial({ color: 0xff0000, opacity, transparent: opacity !== 1, depthFunc: LessEqualDepth}))
+
+    const DepthMaterial = useRef(new ShaderMaterial({
+        uniforms: {
+            diffuseTexture: { value: null },
+            depthTexture: { value: null },
+            opacity: { value: 1.0 }
+        },
+        vertexShader: CopyShader.vertexShader,
+        fragmentShader: `
+            uniform sampler2D diffuseTexture;
+            uniform sampler2D depthTexture;
+            uniform float opacity;
+            varying vec2 vUv;
+        
+            void main() {
+                float currentDepth = gl_FragCoord.z / gl_FragCoord.w;
+                float depthFromTexture = readDepth(gl_FragCoord.xy / vec2(textureSize(depthTexture, 0)));
+                float visibility = step(currentDepth, depthFromTexture);
+                if (visibility < 0.5) discard;
+                gl_FragColor = vec4(1.0, 1.0, 1.0, opacity); // Use the opacity passed to the shader
+            }
+        `,
+        transparent: true,
+        depthWrite: true,
+    }))
+
+    const scene = useThree(state => state.scene)
+
+    const isolatedScene = useMemo(() => { const sc = scene.clone(); sc.attach(children); return sc }, [scene,children])
 
     const renderTarget = useMemo(() => { 
         const dt = new DepthTexture(1, 1)
@@ -51,21 +51,22 @@ const RenderGroup = ({ children, opacity }) => {
     }, [])
 
     useEffect(() => {
-        TransparencyMaterial.current.opacity = opacity
-        TransparencyMaterial.current.transparent = opacity !== 1
+        DepthMaterial.current.opacity = opacity
+        DepthMaterial.current.transparent = opacity !== 1
     }, [opacity])
 
-    useFrame(({ gl, scene, camera }) => {
+    useFrame(({ gl, camera }) => {
         gl.autoClear = false
         gl.setRenderTarget(renderTarget)
         gl.clear()
-        gl.render(scene, camera)
+        gl.render(isolatedScene, camera)
         gl.autoClear = true
+        DepthMaterial.current.uniforms.diffuseTexture.value = renderTarget.texture
+        DepthMaterial.current.uniforms.depthTexture.value = renderTarget.depthTexture
     })
 
     return <>
-        <MaterialOverride material={DepthMaterial}>{children}</MaterialOverride>
-        <MaterialOverride material={TransparencyMaterial.current}>{children}</MaterialOverride>
+        <MaterialOverride material={DepthMaterial.current}>{children}</MaterialOverride>
     </>
 }
 
