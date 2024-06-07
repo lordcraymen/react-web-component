@@ -1,11 +1,7 @@
 import { useThree, useFrame } from "@react-three/fiber"
-import { Depth } from "@react-three/postprocessing"
 import { useEffect, useRef, useMemo } from "react"
-import { UnsignedShortType, Mesh, Scene, MeshBasicMaterial, WebGLRenderTarget, RGBAFormat, ShaderMaterial, DepthTexture, EqualDepth, LessEqualDepth, GreaterEqualDepth } from "three"
+import { UnsignedShortType,  WebGLRenderTarget, RGBAFormat, ShaderMaterial, DepthTexture } from "three"
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
-
-
-
 
 
 const RenderGroup = ({ children, opacity }) => {
@@ -25,7 +21,7 @@ const RenderGroup = ({ children, opacity }) => {
         
             void main() {
                 float currentDepth = gl_FragCoord.z / gl_FragCoord.w;
-                float depthFromTexture = readDepth(gl_FragCoord.xy / vec2(textureSize(depthTexture, 0)));
+                float depthFromTexture = texture2D(depthTexture, vUv).r;
                 float visibility = step(currentDepth, depthFromTexture);
                 if (visibility < 0.5) discard;
                 gl_FragColor = vec4(1.0, 1.0, 1.0, opacity); // Use the opacity passed to the shader
@@ -33,11 +29,12 @@ const RenderGroup = ({ children, opacity }) => {
         `,
         transparent: true,
         depthWrite: true,
+        name: 'DepthMaterial'
     }))
 
     const scene = useThree(state => state.scene)
 
-    const isolatedScene = useMemo(() => { const sc = scene.clone(); sc.attach(children); return sc }, [scene,children])
+    const isolatedScene = useMemo(() => { const sc = scene.clone();  return sc }, [scene,children])
 
     const renderTarget = useMemo(() => { 
         const dt = new DepthTexture(1, 1)
@@ -76,11 +73,14 @@ const MaterialOverride = ({ children, material }) => {
 
   useEffect(() => {
     if (groupRef.current) {
+        groupRef.current.overrideMaterial = material
+        /*
         groupRef.current.traverse(object => { object.overrideMaterial = material
             if(object.material) {
                 object.material.transparent = material.transparent
                 object.material.depthFunc = material.depthFunc
             } });
+        */
     }
   }, [children, material]);
 
