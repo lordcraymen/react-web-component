@@ -100,6 +100,7 @@ const BasicMaterial = new MeshBasicMaterial({color: 0xff0000});
 const Scene = ({ children }) => {
   return (
     <Canvas onCreated={({ gl }) => {
+      
       const originalRenderBufferDirect = gl.renderBufferDirect
       const originalRender = gl.render
 
@@ -115,6 +116,7 @@ const Scene = ({ children }) => {
       gl.renderBufferDirect = function (camera, fog, geometry, material, object, group) {
         originalRenderBufferDirect.call(this, camera, fog, geometry, object.overrideMaterial || material, object, group);
       };
+      
     }} frameloop="demand" >
       <RenderGroup opacity={0.2}>
       <Model src="src/assets/example.glb" scale="10"/></RenderGroup>
