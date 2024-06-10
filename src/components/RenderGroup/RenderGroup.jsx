@@ -111,7 +111,7 @@ const RenderGroup = ({ children, opacity }) => {
 
 import { useEffect, useRef, useMemo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
-import { Vector2, WebGLRenderTarget, OrthographicCamera, Scene, Mesh, PlaneGeometry, MeshBasicMaterial, ShaderMaterial, DepthTexture,UnsignedShortType, RGBAFormat } from 'three';
+import { Color, Vector2, WebGLRenderTarget, OrthographicCamera, Scene, Mesh, PlaneGeometry, MeshBasicMaterial, ShaderMaterial, DepthTexture,UnsignedShortType, RGBAFormat } from 'three';
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
 
 const RenderGroup = ({children,opacity}) => {
@@ -136,7 +136,7 @@ const RenderGroup = ({children,opacity}) => {
             diffuseTexture: { value: null },
             depthTexture: { value: null },
             opacity: { value: 1.0 },
-            resolution: { value: new Vector2(800,800) }
+            resolution: { value: new Vector2() }
         },
         vertexShader: CopyShader.vertexShader,
         fragmentShader: `
@@ -147,12 +147,12 @@ const RenderGroup = ({children,opacity}) => {
     varying vec2 vUv;
 
     void main() {
-        vec2 uv = gl_FragCoord.xy / resolution;
+        vec2 uv = gl_FragCoord.xy / resolution.xy;
         float currentDepth = gl_FragCoord.z / gl_FragCoord.w;
         float depthFromTexture = texture2D(depthTexture, uv).r;
         float visibility = step(currentDepth, depthFromTexture);
-        //vec3 color = vec3(uv.x,uv.y, 0.0, 1.0);  // Konvertieren Sie die normalisierten UV-Koordinaten in eine RGB-Farbe
-        gl_FragColor = texture2D(diffuseTexture, gl_PointCoord);
+        //vec3 color = vec3(uv.x,uv.y, 0.0);  // Konvertieren Sie die normalisierten UV-Koordinaten in eine RGB-Farbe
+        gl_FragColor = texture2D(diffuseTexture, uv);
     }
         `,
         transparent: true,
@@ -180,7 +180,7 @@ const RenderGroup = ({children,opacity}) => {
   }, [scene]);
 
   useFrame(({gl,scene,camera}) => {
-    DepthMaterial.current.uniforms.resolution.value.set(new Vector2(renderTarget.width, renderTarget.height));
+    DepthMaterial.current.uniforms.resolution.value.set(renderTarget.width, renderTarget.height);
     gl.setRenderTarget(renderTarget);
     groupRef.current.overrideMaterial = null;
     gl.render(scene, camera);

@@ -10,6 +10,8 @@ import { LayerProvider } from '../../contexts/LayerContext';
 import { RenderGroup } from "../RenderGroup"
 import { color } from 'three/examples/jsm/nodes/shadernode/ShaderNode';
 
+import { TextureLoader } from 'three';
+
 /*
 // Save the original renderObject function
 const originalRenderObject = WebGLRenderer.prototype.renderObject;
@@ -89,7 +91,14 @@ function Model({src,position,rotation,scale}) {
 Object3D.prototype.overrideMaterial = null;
 
 const LogThree = () => {
-  const { gl } = useThree();
+  const { gl, scene } = useThree();
+
+  
+    // Laden Sie das Hintergrundbild und setzen Sie es als Hintergrund der Szene
+    new TextureLoader().load('/src/assets/background.jpg', texture => {
+      scene.background = texture;
+    });
+
   console.log(gl);
   return null;
 }
