@@ -93,13 +93,13 @@ Object3D.prototype.overrideMaterial = null;
 const LogThree = () => {
   const { gl, scene } = useThree();
 
-  
     // Laden Sie das Hintergrundbild und setzen Sie es als Hintergrund der Szene
+    /*
     new TextureLoader().load('/src/assets/background.jpg', texture => {
       scene.background = texture;
-    });
+    }); */
 
-  console.log(gl);
+  //console.log(gl);
   return null;
 }
 
@@ -114,11 +114,12 @@ const Scene = ({ children }) => {
       const originalRender = gl.render
 
       gl.render = function (scene, camera) {
+        /*
         scene.traverse(object => {
           if (object.parent) {
             object.overrideMaterial = object.parent.overrideMaterial;
           }
-        });
+        });*/
         originalRender.call(this, scene, camera);
       }
 
@@ -126,7 +127,7 @@ const Scene = ({ children }) => {
         originalRenderBufferDirect.call(this, camera, fog, geometry, object.overrideMaterial || material, object, group);
       };
       
-    }} frameloop="demand" >
+    }} frameloop="demand">
       <RenderGroup opacity={0.2}>
       <Model src="src/assets/example.glb" scale="10"/></RenderGroup>
       <Model src="src/assets/example.glb" scale="5" position={[1,0,0]}/>
