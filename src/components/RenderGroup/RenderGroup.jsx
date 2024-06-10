@@ -111,6 +111,7 @@ const RenderGroup = ({ children, opacity }) => {
 
 import { useEffect, useRef, useMemo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
+import { useFBO } from '@react-three/drei';
 import { Color, Vector2, WebGLRenderTarget, OrthographicCamera, Scene, Mesh, PlaneGeometry, MeshBasicMaterial, ShaderMaterial, DepthTexture,UnsignedShortType, RGBAFormat } from 'three';
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
 
@@ -119,6 +120,7 @@ const RenderGroup = ({children,opacity}) => {
 
   const { gl, size, scene } = useThree();
 
+  /*
   const renderTarget = useMemo(() => { 
         const dt = new DepthTexture(size.width, size.height)
         dt.type = UnsignedShortType
@@ -129,7 +131,10 @@ const RenderGroup = ({children,opacity}) => {
         }) 
         return rt
     }, [size])
-  const camera = useRef(new OrthographicCamera(-1, 1, 1, -1, 0, 1));
+    */
+
+    const renderTarget = useFBO(size.width, size.height, { format: RGBAFormat, depthBuffer: true, depthTexture: new DepthTexture(size.width, size.height,UnsignedShortType), stencilBuffer: false})
+
 
   const DepthMaterial = useRef(new ShaderMaterial({
         uniforms: {
@@ -148,11 +153,11 @@ const RenderGroup = ({children,opacity}) => {
 
     void main() {
         vec2 uv = gl_FragCoord.xy / resolution.xy;
-        float currentDepth = gl_FragCoord.z / gl_FragCoord.w;
-        float depthFromTexture = texture2D(depthTexture, uv).r;
-        float visibility = step(currentDepth, depthFromTexture);
-        //vec3 color = vec3(uv.x,uv.y, 0.0);  // Konvertieren Sie die normalisierten UV-Koordinaten in eine RGB-Farbe
-        gl_FragColor = texture2D(diffuseTexture, uv);
+        //float currentDepth = gl_FragCoord.z / gl_FragCoord.w;
+        //float depthFromTexture = texture2D(depthTexture, uv).r;
+        //float visibility = step(currentDepth, depthFromTexture);
+        //vec3 color = vec3(uv.x,uv.y, 0.5);  // Konvertieren Sie die normalisierten UV-Koordinaten in eine RGB-Farbe
+        gl_FragColor = texture2D(diffuseTexture, vUv);
     }
         `,
         transparent: true,
@@ -171,20 +176,24 @@ const RenderGroup = ({children,opacity}) => {
   DepthMaterial.current.uniforms.diffuseTexture.value = renderTarget.texture;
   DepthMaterial.current.uniforms.depthTexture.value = renderTarget.depthTexture;
   
+  const SimpleRedMaterial = new MeshBasicMaterial({color: 0xff0000});
 
   console.log(renderTarget.width, renderTarget.height);
 
   useEffect(() => {
     scene.add(mesh.current);
-    return () => scene.remove(mesh.current);
+    return () => { scene.remove(mesh.current) };
   }, [scene]);
 
   useFrame(({gl,scene,camera}) => {
     DepthMaterial.current.uniforms.resolution.value.set(renderTarget.width, renderTarget.height);
     gl.setRenderTarget(renderTarget);
-    groupRef.current.overrideMaterial = null;
+    const prevBackground = scene.background;
+    scene.background = null
+    groupRef.current.overrideMaterial = SimpleRedMaterial;
     gl.render(scene, camera);
-    groupRef.current.overrideMaterial = DepthMaterial.current;
+    scene.background = prevBackground;
+    groupRef.current.overrideMaterial = null;
     gl.setRenderTarget(null);
   });
 

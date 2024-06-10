@@ -115,7 +115,7 @@ const Scene = ({ children }) => {
 
       gl.render = function (scene, camera) {
         scene.traverse(object => {
-          if (object.parent && object.parent.overrideMaterial && !object.differentOverrideMaterial) {
+          if (object.parent) {
             object.overrideMaterial = object.parent.overrideMaterial;
           }
         });
