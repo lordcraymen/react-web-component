@@ -114,6 +114,7 @@ import { useThree, useFrame } from '@react-three/fiber';
 import { useFBO } from '@react-three/drei';
 import { Color, Vector2, WebGLRenderTarget, OrthographicCamera, Scene, Mesh, PlaneGeometry, MeshBasicMaterial, ShaderMaterial, DepthTexture,UnsignedShortType, RGBAFormat } from 'three';
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
+import { NullShader } from './NullShader';
 
 const RenderGroup = ({children,opacity}) => {
   const groupRef = useRef();
@@ -189,10 +190,12 @@ const RenderGroup = ({children,opacity}) => {
     DepthMaterial.current.uniforms.resolution.value.set(renderTarget.width, renderTarget.height);
     mesh.current.visible = false;
     gl.setRenderTarget(renderTarget);
-    groupRef.current.traverse(obj => obj.overrideMaterial = SimpleRedMaterial);
+    scene.overrideMaterial = NullShader;
+    groupRef.current.traverse(obj => obj.overrideMaterial = obj.material );
     gl.render(scene, camera);
     gl.setRenderTarget(null);
-    groupRef.current.traverse(obj => obj.overrideMaterial = null);
+    groupRef.current.traverse(obj => obj.overrideMaterial = DepthMaterial.current);
+    scene.overrideMaterial = null;
     mesh.current.visible = true;
   });
 
