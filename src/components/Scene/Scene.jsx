@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Canvas, useThree, useLoader} from '@react-three/fiber';
 import { BackSide, Object3D, MeshBasicMaterial } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { Stats } from '@react-three/drei';
 import { Rotator } from '../Rotator/Rotator';
 import { Zoom } from '../Zoom';
 import { Pan } from '../Pan';
@@ -128,6 +129,7 @@ const Scene = ({ children }) => {
       };
       
     }} frameloop="demand">
+      <Stats />
       <RenderGroup opacity={0.2}>
       <Model src="src/assets/example.glb" scale="10"/></RenderGroup>
       <Model src="src/assets/example.glb" scale="5" position={[1,0,0]}/>

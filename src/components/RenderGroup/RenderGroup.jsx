@@ -173,7 +173,7 @@ const RenderGroup = ({children,opacity}) => {
 
   DepthMaterial.current.opacity = opacity;
   DepthMaterial.current.transparent = opacity !== 1;
-  DepthMaterial.current.uniforms.diffuseTexture.value = renderTarget.texture.clone();
+  DepthMaterial.current.uniforms.diffuseTexture.value = renderTarget.texture;
   DepthMaterial.current.uniforms.depthTexture.value = renderTarget.depthTexture;
   
   const SimpleRedMaterial = new MeshBasicMaterial({color: 0xff0000});
@@ -187,14 +187,13 @@ const RenderGroup = ({children,opacity}) => {
 
   useFrame(({gl,scene,camera}) => {
     DepthMaterial.current.uniforms.resolution.value.set(renderTarget.width, renderTarget.height);
+    mesh.current.visible = false;
     gl.setRenderTarget(renderTarget);
-    const prevBackground = scene.background;
-    scene.background = null
     groupRef.current.traverse(obj => obj.overrideMaterial = SimpleRedMaterial);
     gl.render(scene, camera);
-    scene.background = prevBackground;
-    groupRef.current.traverse(obj => obj.overrideMaterial = null);
     gl.setRenderTarget(null);
+    groupRef.current.traverse(obj => obj.overrideMaterial = null);
+    mesh.current.visible = true;
   });
 
   return <group ref={groupRef}>{children}</group>;
