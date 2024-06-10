@@ -12,6 +12,7 @@ import { RenderGroup } from "../RenderGroup"
 import { color } from 'three/examples/jsm/nodes/shadernode/ShaderNode';
 
 import { TextureLoader } from 'three';
+import { NullShader } from '../RenderGroup/NullShader';
 
 /*
 // Save the original renderObject function

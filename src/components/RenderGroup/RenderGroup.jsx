@@ -121,19 +121,6 @@ const RenderGroup = ({children,opacity}) => {
 
   const { gl, size, scene } = useThree();
 
-  /*
-  const renderTarget = useMemo(() => { 
-        const dt = new DepthTexture(size.width, size.height)
-        dt.type = UnsignedShortType
-        const rt = new WebGLRenderTarget(size.width, size.height, {
-            format: RGBAFormat,
-            depthTexture: dt,
-            depthBuffer: true
-        }) 
-        return rt
-    }, [size])
-    */
-
     const renderTarget = useFBO(size.width, size.height, { format: RGBAFormat, depthBuffer: true, depthTexture: new DepthTexture(size.width, size.height,UnsignedShortType), stencilBuffer: false})
 
 
@@ -186,16 +173,33 @@ const RenderGroup = ({children,opacity}) => {
     return () => { scene.remove(mesh.current) };
   }, [scene]);
 
+  const prevVisibility = new Map();
+
   useFrame(({gl,scene,camera}) => {
     DepthMaterial.current.uniforms.resolution.value.set(renderTarget.width, renderTarget.height);
     mesh.current.visible = false;
+    
     gl.setRenderTarget(renderTarget);
-    scene.overrideMaterial = NullShader;
-    groupRef.current.traverse(obj => obj.overrideMaterial = obj.material );
+
+    console.log(scene)
+
+    scene.traverse(obj => {
+      !(obj.isScene) && prevVisibility.set(obj, true); obj.visible = true; 
+      }
+    );
+
+    groupRef.current.traverse(obj => { 
+      obj.overrideMaterial = obj.material;
+      obj.visible = true; 
+      });
+    
     gl.render(scene, camera);
     gl.setRenderTarget(null);
+
+    prevVisibility.forEach((visibility,obj) => { obj.visible = true });
+
     groupRef.current.traverse(obj => obj.overrideMaterial = DepthMaterial.current);
-    scene.overrideMaterial = null;
+    
     mesh.current.visible = true;
   });
 
