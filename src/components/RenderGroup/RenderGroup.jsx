@@ -134,19 +134,29 @@ const RenderGroup = ({children,opacity}) => {
             opacity: { value: 1.0 },
             resolution: { value: new Vector2() }
         },
-        vertexShader: CopyShader.vertexShader,
-        fragmentShader: `
-            uniform sampler2D diffuseTexture;
-    uniform sampler2D depthTexture;
-    uniform float opacity;
-    uniform vec2 resolution;
-    varying vec2 vUv;
+        vertexShader: `
+        varying vec2 vUv;
+        varying vec2 vHighPrecisionZW;
 
-    void main() {
-    vec2 uv = gl_FragCoord.xy / resolution;
-    float currentDepth = (gl_FragCoord.z) / gl_FragCoord.w;
-    float depthFromTexture = texture2D(depthTexture, uv).r;
-    float difference = currentDepth - depthFromTexture;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            vHighPrecisionZW = gl_Position.zw;
+        }
+    `,
+    fragmentShader: `
+        uniform sampler2D diffuseTexture;
+        uniform sampler2D depthTexture;
+        uniform float opacity;
+        uniform vec2 resolution;
+        varying vec2 vUv;
+        varying vec2 vHighPrecisionZW;
+
+        void main() {
+            vec2 uv = gl_FragCoord.xy / resolution;
+            float currentDepth = (vHighPrecisionZW[0] + 0.1) / vHighPrecisionZW[1];
+            float depthFromTexture = texture2D(depthTexture, uv).r;
+            float difference = currentDepth - depthFromTexture;
 
     vec3 color;
     if (difference > 0.0) {
