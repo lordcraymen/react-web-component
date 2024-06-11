@@ -112,7 +112,7 @@ const RenderGroup = ({ children, opacity }) => {
 import { useEffect, useRef, useMemo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import { useFBO } from '@react-three/drei';
-import { Color, Vector2, WebGLRenderTarget, OrthographicCamera, Scene, Mesh, PlaneGeometry, MeshBasicMaterial, ShaderMaterial, DepthTexture,UnsignedShortType, RGBAFormat } from 'three';
+import { Color, Vector2, WebGLRenderTarget, OrthographicCamera, Scene, Mesh, PlaneGeometry, MeshBasicMaterial, ShaderMaterial, DepthTexture,UnsignedShortType,FloatType, RGBAFormat } from 'three';
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
 import { NullShader } from './NullShader';
 
@@ -121,7 +121,10 @@ const RenderGroup = ({children,opacity}) => {
 
   const { gl, size, scene } = useThree();
 
-    const renderTarget = useFBO(size.width, size.height, { format: RGBAFormat, depthBuffer: true, depthTexture: new DepthTexture(size.width, size.height,UnsignedShortType), stencilBuffer: false})
+  const depthTexture = useMemo(() => new DepthTexture(size.width, size.height), [size]);
+  depthTexture.type = FloatType
+
+  const renderTarget = useFBO(size.width, size.height, { format: RGBAFormat, depthBuffer: true, depthTexture:depthTexture, stencilBuffer: false})
 
 
   const DepthMaterial = useRef(new ShaderMaterial({
@@ -140,16 +143,30 @@ const RenderGroup = ({children,opacity}) => {
     varying vec2 vUv;
 
     void main() {
-        vec2 uv = gl_FragCoord.xy / resolution.xy;
-        //float currentDepth = gl_FragCoord.z / gl_FragCoord.w;
-        //float depthFromTexture = texture2D(depthTexture, uv).r;
-        //float visibility = step(currentDepth, depthFromTexture);
-        //vec3 color = vec3(uv.x,uv.y, 0.5);  // Konvertieren Sie die normalisierten UV-Koordinaten in eine RGB-Farbe
-        gl_FragColor = texture2D(diffuseTexture, vUv);
+    vec2 uv = gl_FragCoord.xy / resolution;
+    float currentDepth = (gl_FragCoord.z) / gl_FragCoord.w;
+    float depthFromTexture = texture2D(depthTexture, uv).r;
+    float difference = currentDepth - depthFromTexture;
+
+    vec3 color;
+    if (difference > 0.0) {
+        // Positive difference, output red
+        color = vec3(1.0, 0.0, 0.0);
+    } else if (difference < 0.0) {
+        // Negative difference, output green
+        color = vec3(0.0, 1.0, 0.0);
+    } else {
+        // No difference, output black
+        color = vec3(0.0, 0.0, 0.0);
     }
+
+    gl_FragColor = vec4(color, 1.0);
+}
         `,
         transparent: true,
         depthWrite: true,
+        depthTest: false,
+        opacity:1,
         name: 'DepthMaterial'
     }))
 
@@ -163,6 +180,7 @@ const RenderGroup = ({children,opacity}) => {
   DepthMaterial.current.transparent = opacity !== 1;
   DepthMaterial.current.uniforms.diffuseTexture.value = renderTarget.texture;
   DepthMaterial.current.uniforms.depthTexture.value = renderTarget.depthTexture;
+  DepthMaterial.current.uniforms.opacity.value = opacity;
   
   const SimpleRedMaterial = new MeshBasicMaterial({color: 0xff0000});
 
@@ -181,10 +199,8 @@ const RenderGroup = ({children,opacity}) => {
     
     gl.setRenderTarget(renderTarget);
 
-    console.log(scene)
-
     scene.traverse(obj => {
-      !(obj.isScene) && prevVisibility.set(obj, true); obj.visible = true; 
+      obj.parent && prevVisibility.set(obj, true); obj.visible = true; 
       }
     );
 
@@ -200,7 +216,7 @@ const RenderGroup = ({children,opacity}) => {
 
     groupRef.current.traverse(obj => obj.overrideMaterial = DepthMaterial.current);
     
-    mesh.current.visible = true;
+    //mesh.current.visible = true;
   });
 
   return <group ref={groupRef}>{children}</group>;

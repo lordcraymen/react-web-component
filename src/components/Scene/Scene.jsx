@@ -125,8 +125,8 @@ const Scene = ({ children }) => {
         originalRender.call(this, scene, camera);
       }
 
-      gl.renderBufferDirect = function (camera, fog, geometry, material, object, group) {
-        originalRenderBufferDirect.call(this, camera, fog, geometry, object.overrideMaterial || material, object, group);
+      gl.renderBufferDirect = function (camera, fog, geometry, material, object, group) { 
+        originalRenderBufferDirect.call(this, camera, fog, geometry, object.overrideMaterial || group?.overrideMaterial || material, object, group);
       };
       
     }} frameloop="demand">
