@@ -115,6 +115,38 @@ import { useFBO } from '@react-three/drei';
 import { Color, Vector2, WebGLRenderTarget, OrthographicCamera, Scene, Mesh, PlaneGeometry, MeshBasicMaterial, ShaderMaterial, DepthTexture,UnsignedShortType,FloatType, RGBAFormat } from 'three';
 import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
 import { NullShader } from './NullShader';
+import { SkipRenderMaterial } from '../../shaders/SkipRenderMaterial';
+
+
+const zChannel = `
+        uniform sampler2D diffuseTexture;
+        uniform sampler2D depthTexture;
+        uniform float opacity;
+        uniform vec2 resolution;
+        varying vec2 vUv;
+        varying vec2 vHighPrecisionZW;
+
+        void main() {
+            vec2 uv = gl_FragCoord.xy / resolution;
+            float currentDepth = (vHighPrecisionZW[0] + 0.1) / vHighPrecisionZW[1];
+            float depthFromTexture = texture2D(depthTexture, uv).r;
+            float difference = currentDepth - depthFromTexture;
+
+    vec3 color;
+    if (difference > 0.0) {
+        // Positive difference, output red
+        color = vec3(1.0, 0.0, 0.0);
+    } else if (difference < 0.0) {
+        // Negative difference, output green
+        color = vec3(0.0, 1.0, 0.0);
+    } else {
+        // No difference, output black
+        color = vec3(0.0, 0.0, 0.0);
+    }
+
+    gl_FragColor = vec4(color, 1.0);
+}
+        `
 
 const RenderGroup = ({children,opacity}) => {
   const groupRef = useRef();
@@ -145,34 +177,17 @@ const RenderGroup = ({children,opacity}) => {
         }
     `,
     fragmentShader: `
-        uniform sampler2D diffuseTexture;
-        uniform sampler2D depthTexture;
+        varying vec2 vUv;
+        texture2D diffuseTexture;
+        texture2D depthTexture;
         uniform float opacity;
         uniform vec2 resolution;
-        varying vec2 vUv;
-        varying vec2 vHighPrecisionZW;
+
 
         void main() {
-            vec2 uv = gl_FragCoord.xy / resolution;
-            float currentDepth = (vHighPrecisionZW[0] + 0.1) / vHighPrecisionZW[1];
-            float depthFromTexture = texture2D(depthTexture, uv).r;
-            float difference = currentDepth - depthFromTexture;
-
-    vec3 color;
-    if (difference > 0.0) {
-        // Positive difference, output red
-        color = vec3(1.0, 0.0, 0.0);
-    } else if (difference < 0.0) {
-        // Negative difference, output green
-        color = vec3(0.0, 1.0, 0.0);
-    } else {
-        // No difference, output black
-        color = vec3(0.0, 0.0, 0.0);
-    }
-
-    gl_FragColor = vec4(color, 1.0);
-}
-        `,
+            gl_FragColor = texture2D(diffuseTexture, vUv)
+        }
+    `,
         transparent: true,
         depthWrite: true,
         depthTest: false,
@@ -201,32 +216,23 @@ const RenderGroup = ({children,opacity}) => {
     return () => { scene.remove(mesh.current) };
   }, [scene]);
 
-  const prevVisibility = new Map();
-
   useFrame(({gl,scene,camera}) => {
     DepthMaterial.current.uniforms.resolution.value.set(renderTarget.width, renderTarget.height);
-    mesh.current.visible = false;
     
     gl.setRenderTarget(renderTarget);
 
-    scene.traverse(obj => {
-      obj.parent && prevVisibility.set(obj, true); obj.visible = true; 
-      }
-    );
+    const prevSceneOverrideMaterial = scene.overrideMaterial;
+    scene.overrideMaterial = SkipRenderMaterial;
 
-    groupRef.current.traverse(obj => { 
-      obj.overrideMaterial = obj.material;
-      obj.visible = true; 
-      });
+    groupRef.current.traverse(obj => { obj.overrideMaterial = null; });
     
     gl.render(scene, camera);
     gl.setRenderTarget(null);
 
-    prevVisibility.forEach((visibility,obj) => { obj.visible = true });
+    scene.overrideMaterial = prevSceneOverrideMaterial;
 
     groupRef.current.traverse(obj => obj.overrideMaterial = DepthMaterial.current);
     
-    //mesh.current.visible = true;
   });
 
   return <group ref={groupRef}>{children}</group>;

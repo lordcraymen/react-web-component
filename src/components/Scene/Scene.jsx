@@ -13,6 +13,7 @@ import { color } from 'three/examples/jsm/nodes/shadernode/ShaderNode';
 
 import { TextureLoader } from 'three';
 import { NullShader } from '../RenderGroup/NullShader';
+import { SkipRenderMaterial } from '../../shaders/SkipRenderMaterial';
 
 /*
 // Save the original renderObject function
@@ -90,8 +91,6 @@ function Model({src,position,rotation,scale}) {
   return <primitive object={gltf.scene.clone()} {...{position,rotation,scale}}/>;
 }
 
-Object3D.prototype.overrideMaterial = null;
-
 const LogThree = () => {
   const { gl, scene } = useThree();
 
@@ -111,22 +110,11 @@ const BasicMaterial = new MeshBasicMaterial({color: 0xff0000});
 const Scene = ({ children }) => {
   return (
     <Canvas onCreated={({ gl }) => {
-      
       const originalRenderBufferDirect = gl.renderBufferDirect
-      const originalRender = gl.render
-
-      gl.render = function (scene, camera) {
-        /*
-        scene.traverse(object => {
-          if (object.parent) {
-            object.overrideMaterial = object.parent.overrideMaterial;
-          }
-        });*/
-        originalRender.call(this, scene, camera);
-      }
-
       gl.renderBufferDirect = function (camera, fog, geometry, material, object, group) { 
-        originalRenderBufferDirect.call(this, camera, fog, geometry, object.overrideMaterial || group?.overrideMaterial || material, object, group);
+        const currentMaterial = object.overrideMaterial || group?.overrideMaterial || material
+        //if( currentMaterial === SkipRenderMaterial) return;
+        originalRenderBufferDirect.call(this, camera, fog, geometry, currentMaterial, object, group);
       };
       
     }} frameloop="demand">
