@@ -112,8 +112,8 @@ const Scene = ({ children }) => {
     <Canvas onCreated={({ gl }) => {
       const originalRenderBufferDirect = gl.renderBufferDirect
       gl.renderBufferDirect = function (camera, fog, geometry, material, object, group) { 
-        const currentMaterial = object.overrideMaterial || group?.overrideMaterial || material
-        //if( currentMaterial === SkipRenderMaterial) return;
+        const currentMaterial = object.overrideMaterial || material
+        if( currentMaterial === SkipRenderMaterial) return;
         originalRenderBufferDirect.call(this, camera, fog, geometry, currentMaterial, object, group);
       };
       
@@ -121,7 +121,8 @@ const Scene = ({ children }) => {
       <Stats />
       <RenderGroup opacity={0.2}>
       <Model src="src/assets/example.glb" scale="10"/></RenderGroup>
-      <Model src="src/assets/example.glb" scale="5" position={[1,0,0]}/>
+      <Model src="src/assets/example.glb" scale="10" position={[1,0,0]}/>
+      <Model src="src/assets/example.glb" scale="10" position={[-1,0,0]}/>
       <LogThree />
       <LayerProvider>
         <ambientLight intensity={Math.PI / 2} />
