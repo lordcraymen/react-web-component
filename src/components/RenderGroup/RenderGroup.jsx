@@ -109,13 +109,45 @@ const RenderGroup = ({ children, opacity }) => {
 
 */
 
-import { useEffect, useRef, useMemo } from 'react';
-import { useThree, useFrame } from '@react-three/fiber';
-import { useFBO } from '@react-three/drei';
-import { Color, Vector2, WebGLRenderTarget, OrthographicCamera, Scene, Mesh, PlaneGeometry, MeshBasicMaterial, ShaderMaterial, DepthTexture,UnsignedShortType,FloatType, RGBAFormat, NearestFilter } from 'three';
-import { CopyShader } from "three/examples/jsm/shaders/CopyShader"
-import { NullShader } from './NullShader';
-import { SkipRenderMaterial } from '../../shaders/SkipRenderMaterial';
+import {
+    useEffect,
+    useRef,
+    useMemo
+} from 'react';
+import {
+    useThree,
+    useFrame
+} from '@react-three/fiber';
+import {
+    useFBO
+} from '@react-three/drei';
+import {
+    Color,
+    Vector2,
+    WebGLRenderTarget,
+    OrthographicCamera,
+    Scene,
+    Mesh,
+    PlaneGeometry,
+    MeshBasicMaterial,
+    ShaderMaterial,
+    DepthTexture,
+    UnsignedShortType,
+    FloatType,
+    RGBAFormat,
+    NearestFilter
+} from 'three';
+import {
+    CopyShader
+} from "three/examples/jsm/shaders/CopyShader"
+import {
+    NullShader
+} from './NullShader';
+import {
+    SkipRenderMaterial
+} from '../../shaders/SkipRenderMaterial';
+
+import { TextureLoader } from 'three';
 
 
 const zChannel = `
@@ -150,8 +182,7 @@ const zChannel = `
 
 
 const checkerMaterial = new ShaderMaterial({
-    uniforms: {
-    },
+    uniforms: {},
     vertexShader: CopyShader.vertexShader,
     fragmentShader: `
         void main() {
@@ -170,32 +201,43 @@ const checkerMaterial = new ShaderMaterial({
     transparent: true
 })
 
-const RenderGroup = ({children,opacity}) => {
-  const groupRef = useRef();
+const RenderGroup = ({
+    children,
+    opacity
+}) => {
+    const groupRef = useRef();
 
-  const { gl, size, scene } = useThree();
+    const {
+        gl,
+        size,
+        scene
+    } = useThree();
 
-  const depthTexture = useMemo(() => new DepthTexture(size.width, size.height), [size]);
-  depthTexture.type = FloatType
+    const depthTexture = useMemo(() => new DepthTexture(size.width, size.height), [size]);
+    depthTexture.type = FloatType
 
 
-  //const renderTarget = useFBO(size.width, size.height, { format: RGBAFormat, depthBuffer: true, depthTexture:depthTexture, stencilBuffer: false})
-  const renderTarget = useMemo(() => { 
-    
-    const depthBuffer = new DepthTexture(size.width, size.height)
-    
-    return new WebGLRenderTarget(size.width, size.height, {
-    })
-  }
-    , [size])
+    //const renderTarget = useFBO(size.width, size.height, { format: RGBAFormat, depthBuffer: true, depthTexture:depthTexture, stencilBuffer: false})
+    const renderTarget = useMemo(() => {
 
-console.log(renderTarget.size)
+        const depthBuffer = new DepthTexture(size.width, size.height)
 
-  const DepthMaterial = useRef(new ShaderMaterial({
+        return new WebGLRenderTarget(size.width, size.height, {})
+    }, [size])
+
+    console.log(renderTarget.size)
+
+    const DepthMaterial = useRef(new ShaderMaterial({
         uniforms: {
-            diffuseTexture: { value: null },
-            opacity: { value: 1.0 },
-            resolution: { value: new Vector2() }
+            diffuseTexture: {
+                value: null
+            },
+            opacity: {
+                value: 1.0
+            },
+            resolution: {
+                value: new Vector2()
+            }
         },
         vertexShader: `
 
@@ -216,7 +258,7 @@ console.log(renderTarget.size)
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
     `,
-    fragmentShader: `
+        fragmentShader: `
         varying vec2 vUv;
         uniform sampler2D diffuseTexture;
         uniform sampler2D depthTexture;
@@ -226,70 +268,101 @@ console.log(renderTarget.size)
 
 
         void main() {
-            vec2 uv = vScreenPosition;
-            gl_FragColor = texture2D(diffuseTexture, uv);
+            vec2 texelSize = vec2(1.0) / resolution;
+            gl_FragColor = texture2D(diffuseTexture, gl_FragCoord.xy * texelSize);
         }
     `,
         transparent: true,
         depthWrite: true,
         depthTest: false,
-        opacity:opacity,
+        opacity: opacity,
         name: 'DepthMaterial'
     }))
 
 
-  const mesh = useRef(new Mesh(new PlaneGeometry(2, 2), DepthMaterial.current));
+    const mesh = useRef(new Mesh(new PlaneGeometry(2, 2), DepthMaterial.current));
 
-  mesh.current.position.x = -2;
-  mesh.current.position.x = 2;
+    mesh.current.position.x = -2;
+    mesh.current.position.x = 2;
 
-  opacity = 1.0;
+    opacity = 1.0;
 
-  DepthMaterial.current.opacity = opacity;
-  DepthMaterial.current.transparent = opacity !== 1;
-  DepthMaterial.current.uniforms.diffuseTexture.value = renderTarget.texture;
-  DepthMaterial.current.uniforms.opacity.value = opacity;
+    useEffect(() => {
+        let t
+        new TextureLoader().load('/src/assets/checker.png', texture => {
+            t=texture;
+            DepthMaterial.current.uniforms.diffuseTexture.value = texture;
+        });
+        return () => {
+            DepthMaterial.current.uniforms.diffuseTexture.value = null;
+            t.dispose();
+        }
+    }, []);
+
+    DepthMaterial.current.opacity = opacity;
+    DepthMaterial.current.transparent = opacity !== 1;
+    //DepthMaterial.current.uniforms.diffuseTexture.value = renderTarget.texture;
+    DepthMaterial.current.uniforms.opacity.value = opacity;
 
 
-  
-  
-  const SimpleRedMaterial = new MeshBasicMaterial({color: 0xff0000});
 
-  console.log(renderTarget.width, renderTarget.height);
 
-/*
-  useEffect(() => {
-    scene.add(mesh.current);
-    return () => { scene.remove(mesh.current) };
-  }, [scene]);
-  */
+    const SimpleRedMaterial = new MeshBasicMaterial({
+        color: 0xff0000
+    });
 
-  useFrame(({gl,scene,camera,size}) => {
-    DepthMaterial.current.uniforms.resolution.value.set(size.width, size.height);
-    
-    gl.setRenderTarget(renderTarget);
+    console.log(renderTarget.width, renderTarget.height);
 
-    const prevSceneOverrideMaterial = scene.overrideMaterial;
-    //scene.overrideMaterial = SkipRenderMaterial;
+    /*
+      useEffect(() => {
+        scene.add(mesh.current);
+        return () => { scene.remove(mesh.current) };
+      }, [scene]);
+      */
 
-    scene.traverse(obj => { if(!obj.isScene) obj.overrideMaterial = SkipRenderMaterial; });
+    useFrame(({
+        gl,
+        scene,
+        camera,
+        size
+    }) => {
+        DepthMaterial.current.uniforms.resolution.value.set(1024, 1024);
 
-    groupRef.current.traverse(obj => { obj.overrideMaterial = null });
-    
-    gl.render(scene, camera);
-    gl.setRenderTarget(null);
+        gl.setRenderTarget(renderTarget);
 
-    scene.overrideMaterial = null;
+        const prevSceneOverrideMaterial = scene.overrideMaterial;
+        //scene.overrideMaterial = SkipRenderMaterial;
 
-    scene.traverse(obj => { if(!obj.isScene) obj.overrideMaterial = null });
+        scene.traverse(obj => {
+            if (!obj.isScene) obj.overrideMaterial = SkipRenderMaterial;
+        });
 
-    groupRef.current.traverse(obj => obj.overrideMaterial = DepthMaterial.current);
+        groupRef.current.traverse(obj => {
+            obj.overrideMaterial = null
+        });
 
-     
-    
-  });
+        gl.render(scene, camera);
+        gl.setRenderTarget(null);
 
-  return <group ref={groupRef}>{children}</group>;
+        scene.overrideMaterial = null;
+
+        scene.traverse(obj => {
+            if (!obj.isScene) obj.overrideMaterial = null
+        });
+
+        groupRef.current.traverse(obj => obj.overrideMaterial = DepthMaterial.current);
+
+
+
+    });
+
+    return <group ref = {
+        groupRef
+    } > {
+        children
+    } < /group>;
 };
 
-export { RenderGroup }
+export {
+    RenderGroup
+}
