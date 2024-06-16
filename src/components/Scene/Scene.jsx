@@ -121,8 +121,8 @@ const Scene = ({ children }) => {
       <Stats />
       <RenderGroup opacity={0.2}>
       <Model src="src/assets/example.glb" scale="10"/></RenderGroup>
-      <Model src="src/assets/example.glb" scale="10" position={[1,0,0]}/>
-      <Model src="src/assets/example.glb" scale="10" position={[-1,0,0]}/>
+      <Model src="src/assets/example.glb" scale="10" position={[2,0,-0.1]}/>
+      <Model src="src/assets/example.glb" scale="10" position={[-2,0,0.1]}/>
       <LogThree />
       <LayerProvider>
         <ambientLight intensity={Math.PI / 2} />

@@ -259,7 +259,7 @@ const RenderGroup = ({
     `,
         transparent: true,
         depthWrite: true,
-        depthTest: false,
+        depthTest: true,
         opacity: opacity,
         name: 'DepthMaterial'
     }))
