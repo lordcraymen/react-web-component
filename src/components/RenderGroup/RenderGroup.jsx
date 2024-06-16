@@ -186,7 +186,7 @@ const checkerMaterial = new ShaderMaterial({
     vertexShader: CopyShader.vertexShader,
     fragmentShader: `
         void main() {
-            float checkerSize = 10.0;
+            float checkerSize = 2.0;
             vec2 fragCoord = gl_FragCoord.xy;
 
             if (int(fragCoord.x / checkerSize) % 2 == int(fragCoord.y / checkerSize) % 2) {
@@ -220,10 +220,11 @@ const RenderGroup = ({
     //const renderTarget = useFBO(size.width, size.height, { format: RGBAFormat, depthBuffer: true, depthTexture:depthTexture, stencilBuffer: false})
     const renderTarget = useMemo(() => {
 
+        const ratio = gl.getPixelRatio();
         const depthBuffer = new DepthTexture(size.width, size.height)
 
-        return new WebGLRenderTarget(size.width, size.height, {})
-    }, [size])
+        return new WebGLRenderTarget(size.width * ratio, size.height * ratio, {})
+    }, [size,gl])
 
     console.log(renderTarget.size)
 
@@ -240,36 +241,20 @@ const RenderGroup = ({
             }
         },
         vertexShader: `
-
-        varying vec2 vUv;
-        varying vec2 vScreenPosition;
-
         void main() {
-            // Pass the UV coordinates to the fragment shader
-            vUv = uv;
-
-            // Calculate the screen position in normalized device coordinates (NDC)
-            vec4 screenPosition = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    
-            // Convert NDC to screen coordinates (0,0) to (1,1)
-            vScreenPosition = screenPosition.xy / screenPosition.w * 0.5 + 0.5;
-
-            // Standard transformation
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
     `,
         fragmentShader: `
-        varying vec2 vUv;
         uniform sampler2D diffuseTexture;
         uniform sampler2D depthTexture;
         uniform float opacity;
         uniform vec2 resolution;
-        varying vec2 vScreenPosition;
-
 
         void main() {
-            vec2 texelSize = vec2(1.0) / resolution;
-            gl_FragColor = texture2D(diffuseTexture, gl_FragCoord.xy * texelSize);
+            vec4 texel = texture2D(diffuseTexture, gl_FragCoord.xy / resolution);
+            gl_FragColor = vec4(texel.rgb, texel.a * opacity);
+
         }
     `,
         transparent: true,
@@ -285,8 +270,9 @@ const RenderGroup = ({
     mesh.current.position.x = -2;
     mesh.current.position.x = 2;
 
-    opacity = 1.0;
+    opacity = 0.5;
 
+/*
     useEffect(() => {
         let t
         new TextureLoader().load('/src/assets/checker.png', texture => {
@@ -298,10 +284,11 @@ const RenderGroup = ({
             t.dispose();
         }
     }, []);
+    */
 
     DepthMaterial.current.opacity = opacity;
     DepthMaterial.current.transparent = opacity !== 1;
-    //DepthMaterial.current.uniforms.diffuseTexture.value = renderTarget.texture;
+    DepthMaterial.current.uniforms.diffuseTexture.value = renderTarget.texture;
     DepthMaterial.current.uniforms.opacity.value = opacity;
 
 
@@ -326,7 +313,8 @@ const RenderGroup = ({
         camera,
         size
     }) => {
-        DepthMaterial.current.uniforms.resolution.value.set(1024, 1024);
+        const ratio = gl.getPixelRatio();
+        DepthMaterial.current.uniforms.resolution.value.set(size.width * ratio, size.height * ratio);
 
         gl.setRenderTarget(renderTarget);
 
@@ -338,7 +326,7 @@ const RenderGroup = ({
         });
 
         groupRef.current.traverse(obj => {
-            obj.overrideMaterial = null
+            obj.overrideMaterial = null;
         });
 
         gl.render(scene, camera);
