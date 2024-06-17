@@ -95,10 +95,10 @@ const LogThree = () => {
   const { gl, scene } = useThree();
 
     // Laden Sie das Hintergrundbild und setzen Sie es als Hintergrund der Szene
-    /*
+    
     new TextureLoader().load('/src/assets/background.jpg', texture => {
       scene.background = texture;
-    }); */
+    }); 
 
   //console.log(gl);
   return null;
@@ -119,10 +119,13 @@ const Scene = ({ children }) => {
       
     }} frameloop="demand">
       <Stats />
-      <RenderGroup opacity={0.2}>
-      <Model src="src/assets/example.glb" scale="10"/></RenderGroup>
-      <Model src="src/assets/example.glb" scale="10" position={[2,0,-0.1]}/>
-      <Model src="src/assets/example.glb" scale="10" position={[-2,0,0.1]}/>
+      <RenderGroup opacity={0.5}><Box position={[0.2, 0, 0]} scale={0.1}/></RenderGroup>
+      <RenderGroup zindex={100} opacity={0.5}><Box position={[0, 0, 0]} scale={0.1}/></RenderGroup>
+      <RenderGroup zindex={200} opacity={0.5}><Model src="src/assets/example.glb" scale="1" position={[-0.2,0,0]}/></RenderGroup>
+      
+      <Model src="src/assets/example.glb" scale="1" position={[0,0,0]}/>
+      
+      
       <LogThree />
       <LayerProvider>
         <ambientLight intensity={Math.PI / 2} />
