@@ -208,8 +208,8 @@ const RenderGroup = ({
 
         }
     `,
-        depthWrite: true,
-        depthTest: true,
+        depthWrite: false,
+        depthTest: false,
         name: 'DepthMaterial'
     }))
 
@@ -257,7 +257,7 @@ const RenderGroup = ({
         });
 });
 
-    return <><group ref = {groupRef} >{children}</group></>;
+    return <><group ref={groupRef}>{children}</group></>;
 };
 
 export {
