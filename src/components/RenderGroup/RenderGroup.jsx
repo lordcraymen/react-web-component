@@ -135,7 +135,9 @@ import {
     UnsignedShortType,
     FloatType,
     RGBAFormat,
-    NearestFilter
+    NearestFilter,
+    GreaterEqualDepth,
+    NotEqualDepth
 } from 'three';
 import {
     CopyShader
@@ -182,8 +184,8 @@ const zChannel = `
 
 
 const depthOnlyMaterial = new MeshBasicMaterial({
-    color: 0xff0000,
-    opacity: 1.0,
+    color: 0x999999,
+    opacity: 0.5,
     depthWrite: true,
     transparent: true,
     name: 'DepthOnlyMaterial'
@@ -208,6 +210,15 @@ const checkerMaterial = new ShaderMaterial({
     opacity: 1.0,
     transparent: true
 })
+
+
+const setDepth = (obj) => {
+    obj && obj.traverse((child) => {
+        if (child.isMesh) {
+            child.material = depthOnlyMaterial;
+        }
+    });
+}
 
 const RenderGroup = ({
     children,
@@ -266,7 +277,7 @@ const RenderGroup = ({
         }
     `,
         transparent: true,
-        depthWrite: true,
+        depthWrite: false,
         depthTest: true,
         opacity: opacity,
         name: 'DepthMaterial'
@@ -340,20 +351,6 @@ const RenderGroup = ({
         gl.render(scene, camera);
         gl.setRenderTarget(null);
 
-        groupRef.current.traverse(obj => {
-            obj.overrideMaterial = depthOnlyMaterial;
-        });
-
-        groupRef.current.position.z = -1;
-
-        gl.autoClear = false;
-
-        gl.render(scene, camera);
-
-        groupRef.current.position.z = 0;
-
-        gl.autoClear = true;
-
         scene.overrideMaterial = null;
 
         scene.traverse(obj => {
@@ -366,11 +363,11 @@ const RenderGroup = ({
 
     },1);
 
-    return <group ref = {
+    return <><group ref={setDepth}>{children}</group><group ref = {
         groupRef
     } > {
         children
-    } < /group>;
+    } </group></>;
 };
 
 export {
