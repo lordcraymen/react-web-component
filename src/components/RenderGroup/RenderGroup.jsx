@@ -58,6 +58,7 @@ const RenderGroup = ({children, opacity=1}) => {
                 float depth = texture2D(depthTexture, gl_FragCoord.xy / resolution).r / gl_FragCoord.w;
                 float currentDepth = (gl_FragCoord.z / gl_FragCoord.w) - 0.001;
             
+            
                 if (currentDepth > depth) {
                     discard;
                 }

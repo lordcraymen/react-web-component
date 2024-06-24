@@ -119,9 +119,9 @@ const Scene = ({ children }) => {
       
     }} frameloop="demand">
       <Stats />
-      <RenderGroup opacity={0.9}><Box position={[0.2, 0, 0]} scale={0.1}/></RenderGroup>
-      <RenderGroup zindex={100} opacity={0.1}><Box position={[0, 0, 0]} scale={0.1}/></RenderGroup>
-      <RenderGroup zindex={200} opacity={0.5}><Model src="src/assets/example.glb" scale="1" position={[-0.2,0,0]}/></RenderGroup>
+      <RenderGroup zindex={200} opacity={0.5}><Rotator>
+      <Model src="src/assets/example.glb" scale="1" position={[-0.2,0,0]}/>
+      </Rotator></RenderGroup>
       
       <Model src="src/assets/example.glb" scale="1" position={[0,0,0]}/>
       

@@ -19,6 +19,8 @@ const Rotator = ({ children }) => {
 
   const onPointerDown = (event) => {
     if(event.ctrlKey) return
+    //event.preventDefault();
+    //event.stopPropagation();
     setCursorStyle('grabbing')
     pointerStart.current.set(event.clientX, event.clientY);
     startQuaternion.current.copy(rotator.current.quaternion);
@@ -28,6 +30,8 @@ const Rotator = ({ children }) => {
   };
 
   const handlePointerMove = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       const pointerDelta = new Vector2(
         event.clientX - pointerStart.current.x,
         event.clientY - pointerStart.current.y
