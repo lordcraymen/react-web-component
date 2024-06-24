@@ -1,6 +1,16 @@
 import { useEffect, useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Vector2, WebGLRenderTarget, ShaderMaterial, DepthTexture } from 'three';
+import { useFrame,extend } from '@react-three/fiber';
+import { Vector2, WebGLRenderTarget, ShaderMaterial, DepthTexture, Scene } from 'three';
+
+class Layer extends Scene {
+    constructor() {
+        super();
+        this.type = "Scene";
+        this.isLayer = true;
+    }
+}
+
+extend({ Layer });
 
 //SkipRenderMaterial is a material that will cause the renderbufferDirect function to return early
 //I use this material to skip rendering the objects that are not in the current render group
@@ -73,9 +83,11 @@ const RenderGroup = ({children, opacity=1}) => {
 
         // I set everything in the scene to a SkipRenderMaterial material
         // so that the renderbufferDirect function will return early
+        /*
         scene.traverse(obj => {
             if(!obj.isScene) obj.overrideMaterial = SkipRenderMaterial;
         });
+        */
 
         // I set the current group to null so that objects in this group will render normally
         groupRef.current.traverse(obj => {
@@ -94,9 +106,10 @@ const RenderGroup = ({children, opacity=1}) => {
 
         // I set ovverideMaterial to null in the scene so that objects in the scene will render normally
         //todo: maybe store the original overrideMaterials in a map and roll back to them
+        /*
         scene.traverse(obj => {
              obj.overrideMaterial = null
-        });
+        });*/
 
         // I set the current group to DepthMaterial so that objects in this group 
         //will render with the DepthMaterial
@@ -108,7 +121,7 @@ const RenderGroup = ({children, opacity=1}) => {
         });
     },1);
 
-    return <><group ref={groupRef}>{children}</group></>;
+    return <><layer ref={groupRef}>{children}</layer></>;
 };
 
 export {
